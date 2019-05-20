@@ -27,4 +27,10 @@ class Helper
     {
         return preg_replace('/([^a-z0-9]+)/i', ' ', $content);
     }
+
+    public static function baseName($name)
+    {
+        $name = array_filter(preg_split("/[\/]/i", str_ireplace('\\','/',$name)), 'trim');
+        return array_pop($name);
+    }
 }

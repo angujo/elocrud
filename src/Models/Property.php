@@ -67,7 +67,8 @@ class Property
     {
         self::constant(strtoupper($column->name), $column->name)->setComment('Column name: ' . $column->name);
         //echo '<pre>';var_dump($column->type->isPhpinteger,$column->type->isInt,$column->data_type);
-        self::phpdocProperty($column->name, $column->type->phpName(), Helper::toWords($column->name));
+        $prop = self::phpdocProperty($column->name, $column->type->phpName(), Helper::toWords($column->name));
+        if ($column->is_nullable && !$column->is_primary && !$column->is_auto_increment) $prop->addType('NULL');
     }
 
     /**
@@ -147,8 +148,8 @@ class Property
             $content = str_ireplace('${prefix}', $property->getPrefix(), $content);
             $content = str_ireplace('${comments}', $property->getComment(), $content);
             $content = str_ireplace('${name}', $property->getName(), $content);
-            $content = str_ireplace('${type}', (is_array($property->getType()) ? implode('|', $property->getType()) : $property->getType()), $content);
-            $content = str_ireplace('${params}', (is_array($property->getParams()) ? implode(', ', array_filter(array_map(function ($p, $k) { return is_string($k) ? $k . '=' . var_export($p, true) : $p; }, $property->getType()))) : $property->getType()), $content);
+            $content = str_ireplace('${type}', $property->getType(true), $content);
+            $content = str_ireplace('${params}', (is_array($property->getParams()) ? implode(', ', array_filter(array_map(function ($p, $k) { return is_string($k) ? $k . '=' . var_export($p, true) : $p; }, $property->getType(true)))) : $property->getType(true)), $content);
             $output .= $content . "\n";
         }
         return Helper::cleanPlaceholder($output);
@@ -300,10 +301,12 @@ class Property
     }
 
     /**
+     * @param bool $string
      * @return string|string[]
      */
-    public function getType()
+    public function getType($string=false)
     {
+        if ($string && is_array($this->type)) return implode('|', $this->type);
         return $this->type;
     }
 
