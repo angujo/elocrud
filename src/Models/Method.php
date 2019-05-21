@@ -5,6 +5,11 @@ namespace Angujo\Elocrud\Models;
 
 
 use Angujo\DBReader\Models\ForeignKey;
+use Angujo\Elocrud\Config;
+use Angujo\Elocrud\Helper;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Method
 {
@@ -13,27 +18,113 @@ class Method
     private $name;
     private $run;
     private $output;
+    private $output_type;
     private $static = false;
     private $access = 'public';
     private static $me = [];
-    private static $c_name = '_default_';
+    private static $def_name = '_default_';
+    private static $c_name;
+    private $namespace;
+    private $imports = [];
+    private $properties = [];
 
-    protected function __construct($name)
+    protected function __construct($name, $fly = false)
     {
+        self::$c_name = self::$def_name;
         $this->setName($name);
-        self::$me[self::$c_name][] = $this;
+        if (false === $fly) self::$me[self::$c_name][] = $this;
     }
 
-    public static function init($name)
+    public static function init($name = null)
     {
-        if (!is_string($name) || !is_numeric($name)) return;
-        self::$me[$name] = isset(self::$me[$name]) ? self::$me[$name] : [];
-        self::$c_name = $name;
+        if (null !== $name && !is_string($name) && !is_numeric($name)) return;
+        self::$c_name = null !== $name ? $name : self::$def_name;
+        self::$me[self::$c_name] = [];
     }
 
-    public static function fromForeignKey(ForeignKey $foreignKey)
+    public static function fromForeignKey(ForeignKey $foreignKey, $namespace, $return = false)
     {
+        $method = new self($name = Config::relationFunctionName($foreignKey), $return);
+        $method->setReturns(true);
+        $method->namespace = $namespace;
+        $method->setComment('Relationship method to call constraint class!');
+        if ($foreignKey->isOneToOne()) {
+            $method->setOutput('$this->hasOne(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
+            $method->setOutputType(Helper::baseName(HasOne::class));
+            $method->imports[] = HasOne::class;
+            Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
+            // $method->imports[] = $method->getNamespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+        }
+        if ($foreignKey->isOneToMany()) {
+            $method->setOutput('$this->hasMany(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
+            $method->setOutputType(Helper::baseName(HasMany::class));
+            $method->imports[] = Collection::class;
+            $method->imports[] = HasMany::class;
+            Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name) . '[]', Helper::toWords($foreignKey->name))->addType('Collection');
+            //$method->imports[] = $method->getNamespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+        }
+        return $method;
+    }
 
+    public function __toString()
+    {
+        $content = file_get_contents(Helper::BASE_DIR . '/stubs/function-template.tmpl');
+        $content = Helper::replacePlaceholder('description', $this->getComment(), $content);
+        $content = Helper::replacePlaceholder('returns', $this->getOutputType(), $content);
+        $content = Helper::replacePlaceholder('access', $this->getAccess(), $content);
+        $content = Helper::replacePlaceholder('static', $this->isStatic() ? 'static ' : '', $content);
+        $content = Helper::replacePlaceholder('name', $this->getName(), $content);
+        $content = Helper::replacePlaceholder('run', $this->getRun(true), $content);
+        $content = Helper::replacePlaceholder('return', $this->isReturns() ? 'return ' : '', $content);
+        $content = Helper::replacePlaceholder('output', $this->getOutput(), $content);
+        return Helper::cleanPlaceholder($content);
+    }
+
+    public static function textFormat($name = null)
+    {
+        $name = null === $name || !isset(self::$me[$name]) ? self::$def_name : $name;
+        if (!isset(self::$me[$name]) || !is_array(self::$me[$name])) return '';
+        $content = '';
+        $entries = array_unique(self::$me[$name]);
+        /** @var Method $method */
+        foreach ($entries as $method) {
+            $content .= "\n\n" . $method;
+        }
+        return $content;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getNamespace()
+    {
+        return $this->namespace;
+    }
+
+    /**
+     * @return array
+     */
+    public function getImports(): array
+    {
+        return array_unique($this->imports);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getOutputType()
+    {
+        return $this->output_type;
+    }
+
+    /**
+     * @param mixed $output_type
+     * @return Method
+     */
+    public function setOutputType($output_type)
+    {
+        $this->output_type = $output_type;
+        return $this;
     }
 
     /**
@@ -110,11 +201,13 @@ class Method
     }
 
     /**
+     * @param bool $string
      * @return mixed
      */
-    public function getComment()
+    public function getComment($string = false)
     {
-        return $this->comment;
+        if (is_array($this->comment) && $string) return implode("\t* ", $this->comment);
+        return $this->comment ? $this->comment : '*';
     }
 
     /**
@@ -170,5 +263,20 @@ class Method
         if (!is_array($this->run)) $this->run = $this->run ? [$this->run] : [];
         $this->run[] = $run;
         return $this;
+    }
+
+    public function addComment($comment)
+    {
+        if (!is_array($this->comment)) $this->comment = $this->comment ? [$this->comment] : [];
+        $this->comment[] = $comment;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getProperties(): array
+    {
+        return $this->properties;
     }
 }

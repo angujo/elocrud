@@ -30,7 +30,18 @@ class Helper
 
     public static function baseName($name)
     {
-        $name = array_filter(preg_split("/[\/]/i", str_ireplace('\\','/',$name)), 'trim');
+        $name = array_filter(preg_split("/[\/]/i", str_ireplace('\\', '/', $name)), 'trim');
         return array_pop($name);
+    }
+
+    public static function className($name)
+    {
+        return ucwords(self::carmelCase($name));
+    }
+
+    public static function valueExport($value)
+    {
+        if (is_array($value)) return preg_replace('/\s+/', ' ', preg_replace('/(([\d]+(\s+)?\=\>(\s+)?)|\s+)/i', ' ', var_export($value, true)));
+        return var_export($value, true);
     }
 }

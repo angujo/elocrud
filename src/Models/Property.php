@@ -140,7 +140,7 @@ class Property
     public static function getPhpDocText()
     {
         if (empty(self::$instances['phpdoc'])) return null;
-        $output = '';
+        $output = [];
         /** @var Property $property */
         foreach (self::$instances['phpdoc'] as $property) {
             if (!$property->getName()) continue;
@@ -150,9 +150,9 @@ class Property
             $content = str_ireplace('${name}', $property->getName(), $content);
             $content = str_ireplace('${type}', $property->getType(true), $content);
             $content = str_ireplace('${params}', (is_array($property->getParams()) ? implode(', ', array_filter(array_map(function ($p, $k) { return is_string($k) ? $k . '=' . var_export($p, true) : $p; }, $property->getType(true)))) : $property->getType(true)), $content);
-            $output .= $content . "\n";
+            $output[] = $content;
         }
-        return Helper::cleanPlaceholder($output);
+        return Helper::cleanPlaceholder(implode("\n", array_unique($output)));
     }
 
     public static function getConstantText()
@@ -189,7 +189,7 @@ class Property
             else $content = str_ireplace('${var}', '* @var ' . (is_array($property->getType()) ? implode('|', $property->getType()) : $property->getType()), $content);
             $content = str_ireplace('${access}', ($property->getAccess() ?: 'public') . ' ', $content);
             $content = str_ireplace('${name}', $property->getName() . ' ', $content);
-            $content = str_ireplace('${value}', var_export($property->getValue(), true), $content);
+            $content = str_ireplace('${value}', Helper::valueExport($property->getValue()), $content);
             $output .= $content . "\n";
         }
         return Helper::cleanPlaceholder($output);
@@ -304,7 +304,7 @@ class Property
      * @param bool $string
      * @return string|string[]
      */
-    public function getType($string=false)
+    public function getType($string = false)
     {
         if ($string && is_array($this->type)) return implode('|', $this->type);
         return $this->type;

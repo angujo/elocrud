@@ -6,6 +6,8 @@ namespace Angujo\Elocrud\Models;
 
 use Angujo\DBReader\Models\DBColumn;
 use Angujo\DBReader\Models\DBTable;
+use Angujo\DBReader\Models\ForeignKey;
+use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Helper;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -31,11 +33,12 @@ class Model
     public function __construct(DBTable $table, $extends = null)
     {
         Property::init();
+        Method::init();
         $this->setExtension(!is_string($extends) ? \Illuminate\Database\Eloquent\Model::class : $extends);
         $this->table = $table;
         $this->content = file_get_contents(Helper::BASE_DIR . '/stubs/model-template.tmpl');
         $this->className = Helper::carmelCase($this->table->name);
-        $this->namespace = $this->className;
+        $this->namespace = Config::namespace();
         $this->fileName = $this->className . '.php';
         $this->timestamps = Property::attribute('protected', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
         Property::attribute('protected', 'table', $table->name, 'Model Table')->setType('string');
@@ -66,6 +69,14 @@ class Model
             $this->dates($column);
         });
         $this->timestamps->setValue(2 === $timeStamp);
+    }
+
+    protected function setForeignKeys()
+    {
+        $this->table->foreign_keys_one_to_one->merge($this->table->foreign_keys_one_to_many)->each(function (ForeignKey $foreignKey) {
+            $method = Method::fromForeignKey($foreignKey, $this->namespace);
+            $this->imports = array_merge($this->imports, $method->getImports());
+        });
     }
 
     protected function dates(DBColumn $column)
@@ -105,6 +116,7 @@ class Model
     public function __toString()
     {
         $this->setColumns();
+        $this->setForeignKeys();
         $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function ($cls) { return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
         $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse " . implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))) . ';' : '', $this->content);
         $this->content = Helper::replacePlaceholder('constants', Property::getConstantText(), $this->content);
@@ -113,6 +125,7 @@ class Model
         $this->content = Helper::replacePlaceholder('attributes', Property::getAttributeText(), $this->content);
         $this->content = Helper::replacePlaceholder('class', $this->className, $this->content);
         $this->content = Helper::replacePlaceholder('namespace', $this->namespace, $this->content);
+        $this->content = Helper::replacePlaceholder('functions', Method::textFormat(), $this->content);
         return Helper::cleanPlaceholder($this->content);
     }
 }
