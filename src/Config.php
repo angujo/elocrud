@@ -21,7 +21,10 @@ class Config
     const COLUMN_NAME = 'column';
     const CONSTRAINT_NAME = 'constraint';
 
-    private static $_defaults = ['relation_name' => self::CLASS_NAME, 'relation_remove_prx' => 'fk_', 'relation_remove_sfx' => '_id', 'namespace' => 'App\Models'];
+    private static $_defaults = ['relation_name' => self::CLASS_NAME,
+        'relation_remove_prx' => 'fk_',
+        'relation_remove_sfx' => '_id',
+        'namespace' => 'App\Models'];
 
     public static function relationFunctionName(ForeignKey $foreignKey)
     {
