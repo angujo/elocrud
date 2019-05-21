@@ -26,9 +26,10 @@ class Config
         'relation_remove_sfx' => '_id',
         'namespace' => 'App\Models'];
 
-    public static function relationFunctionName(ForeignKey $foreignKey)
+    public static function relationFunctionName(ForeignKey $foreignKey, $strictly = null)
     {
-        switch (self::relation_name()) {
+        $strictly = null === $strictly || !is_string($strictly) ? self::relation_name() : $strictly;
+        switch ($strictly) {
             case self::CLASS_NAME:
                 $clsName = Helper::className($foreignKey->foreign_table_name);
                 break;
@@ -36,8 +37,11 @@ class Config
                 $clsName = Helper::className(trim(preg_replace("/((^fk(_)?)|((_)?fk$))/i", '', $foreignKey->name), "_"));
                 break;
             case self::COLUMN_NAME:
-            default:
                 $clsName = Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?' . self::relation_remove_sfx() . '$))/i', '', $foreignKey->foreign_column_name), "_"));
+                break;
+            default:
+                //TODO make this intelligent option to check on relationship and name this function accordingly
+                return self::relationFunctionName($foreignKey, self::CLASS_NAME);
         }
         return lcfirst($clsName);
     }

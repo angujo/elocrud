@@ -47,7 +47,7 @@ class Method
         $method = new self($name = Config::relationFunctionName($foreignKey), $return);
         $method->setReturns(true);
         $method->namespace = $namespace;
-        $method->setComment('Relationship method to call constraint class!');
+        $method->addComment('Relationship method to call constraint class!');
         if ($foreignKey->isOneToOne()) {
             $method->setOutput('$this->hasOne(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
             $method->setOutputType(Helper::baseName(HasOne::class));
@@ -69,7 +69,7 @@ class Method
     public function __toString()
     {
         $content = file_get_contents(Helper::BASE_DIR . '/stubs/function-template.tmpl');
-        $content = Helper::replacePlaceholder('description', $this->getComment(), $content);
+        $content = Helper::replacePlaceholder('description', $this->getComment(true), $content);
         $content = Helper::replacePlaceholder('returns', $this->getOutputType(), $content);
         $content = Helper::replacePlaceholder('access', $this->getAccess(), $content);
         $content = Helper::replacePlaceholder('static', $this->isStatic() ? 'static ' : '', $content);
@@ -206,7 +206,7 @@ class Method
      */
     public function getComment($string = false)
     {
-        if (is_array($this->comment) && $string) return implode("\t* ", $this->comment);
+        if (is_array($this->comment) && $string) return implode("\n\t* ", $this->comment);
         return $this->comment ? $this->comment : '*';
     }
 
