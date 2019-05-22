@@ -25,7 +25,7 @@ class Config
     const CONSTRAINT_NAME = 'constraint';
 
     private static $_defaults = [
-        'relation_name' => self::CONSTRAINT_NAME,
+        'relation_name' => self::COLUMN_NAME,
         'relation_remove_prx' => 'fk',
         'relation_remove_sfx' => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
@@ -46,7 +46,8 @@ class Config
                 $clsName = Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?(' . self::relation_remove_prx() . '|' . self::relation_remove_sfx() . ')$))/i', '', $foreignKey->name), "_"));
                 break;
             case self::COLUMN_NAME:
-                $clsName = Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?' . self::relation_remove_sfx() . '$))/i', '', $foreignKey->column_name), "_"));
+                $name=$foreignKey->column_name;
+                $clsName = Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?' . self::relation_remove_sfx() . '$))/i', '', $name), "_"));
                 break;
             default:
                 return self::relationFunctionName($foreignKey, self::COLUMN_NAME);

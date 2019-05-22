@@ -45,7 +45,6 @@ class Method
     public static function fromForeignKey(ForeignKey $foreignKey, $namespace, $return = false)
     {
         $method = new self($name = Config::relationFunctionName($foreignKey), $return);
-        var_dump($name,$foreignKey->name);
         $method->setReturns(true);
         $method->namespace = $namespace;
         $method->addComment('Relationship method to call constraint class!');
@@ -69,6 +68,7 @@ class Method
 
     public function __toString()
     {
+        if (!$this->getName()) return '';
         $content = file_get_contents(Helper::BASE_DIR . '/stubs/function-template.tmpl');
         $content = Helper::replacePlaceholder('description', $this->getComment(true), $content);
         $content = Helper::replacePlaceholder('returns', $this->getOutputType(), $content);
@@ -86,7 +86,7 @@ class Method
         $name = null === $name || !isset(self::$me[$name]) ? self::$def_name : $name;
         if (!isset(self::$me[$name]) || !is_array(self::$me[$name])) return '';
         $content = '';
-        $entries = array_unique(self::$me[$name]);
+        $entries = (self::$me[$name]);
         /** @var Method $method */
         foreach ($entries as $method) {
             $content .= "\n\n" . $method;
