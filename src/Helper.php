@@ -78,4 +78,10 @@ class Helper
         if (is_array($value)) return preg_replace('/\s+/', ' ', preg_replace('/(([\d]+(\s+)?\=\>(\s+)?)|\s+)/i', ' ', var_export($value, true)));
         return var_export($value, true);
     }
+
+    public static function makeDir($path)
+    {
+        $path = trim($path, "\\/");
+        if (!file_exists($path) && !is_dir($path)) mkdir($path);
+    }
 }

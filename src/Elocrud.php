@@ -25,12 +25,27 @@ class Elocrud
         });
     }
 
-    public function writeModels($path)
+    public function writeModels()
     {
-        $path = trim($path, "\\/");
-        if (!file_exists($path) && !is_dir($path)) mkdir($path);
-        $this->modelsOutput(function (Model $model) use ($path) {
-            file_put_contents($path . '/' . $model->fileName, (string)$model);
+        $this->extendLaravelModel();
+        Helper::makeDir(Config::base_dir());
+        $this->modelsOutput(function (Model $model) {
+            file_put_contents(Config::base_dir() . '/' . $model->fileName, (string)$model);
         });
+    }
+
+    public function extendLaravelModel()
+    {
+        if (!Config::composite_keys()) return;
+        $path = Config::base_dir() . '\Extensions';
+        $namespace = Config::namespace() . '\\Extensions';
+        Helper::makeDir($path);
+        $content = file_get_contents(Helper::BASE_DIR . '/stubs/laravel-model.tmpl');
+        $content = Helper::replacePlaceholder('namespace', $namespace, $content);
+        $content = Helper::replacePlaceholder('name', Config::eloquent_extension_name(), $content);
+        $content = Helper::replacePlaceholder('extension', Config::model_class(), $content);
+        $content = Helper::replacePlaceholder('extend', Helper::baseName(Config::model_class()), $content);
+        file_put_contents($path . '/' . Config::eloquent_extension_name() . '.php', $content);
+        Config::model_class($namespace . '\\' . Config::eloquent_extension_name());
     }
 }

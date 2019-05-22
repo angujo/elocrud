@@ -30,11 +30,11 @@ class Model
 
     public $fileName;
 
-    public function __construct(DBTable $table, $extends = null)
+    public function __construct(DBTable $table)
     {
         Property::init();
         Method::init();
-        $this->setExtension(!is_string($extends) ? \Illuminate\Database\Eloquent\Model::class : $extends);
+        $this->setExtension(Config::model_class());
         $this->table = $table;
         $this->content = file_get_contents(Helper::BASE_DIR . '/stubs/model-template.tmpl');
         $this->className = Helper::carmelCase($this->table->name);

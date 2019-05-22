@@ -45,6 +45,7 @@ class Method
     public static function fromForeignKey(ForeignKey $foreignKey, $namespace, $return = false)
     {
         $method = new self($name = Config::relationFunctionName($foreignKey), $return);
+        var_dump($name,$foreignKey->name);
         $method->setReturns(true);
         $method->namespace = $namespace;
         $method->addComment('Relationship method to call constraint class!');
