@@ -43,7 +43,6 @@ class Model
         $this->timestamps = Property::attribute('protected', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
         Property::attribute('protected', 'table', $table->name, 'Model Table')->setType('string');
         $this->fillables = Property::attribute('protected', 'fillable', [], 'Mass assignable columns')->setType('array');
-        $this->casts = Property::attribute('protected', 'casts', [], 'Casts')->setType('array');
         $this->dates = Property::attribute('protected', 'dates', [], 'Date and Time Columns')->setType('array');
     }
 
@@ -73,6 +72,7 @@ class Model
                 $this->fillables->addValue($column->name);
                 $this->defaultColumn($column);
             }
+            $this->setCast($column);
             $this->softDeletes($column);
             $this->dates($column);
         });
@@ -108,9 +108,34 @@ class Model
         $this->attribs->addValue($column->default, $column->name);
     }
 
+    protected function setCast(DBColumn $column)
+    {
+        if (!$this->casts) $this->casts = Property::attribute('protected', 'casts', [], 'Casts')->setType('array');
+        if (null !== ($v = $this->typeCast($column))) $this->casts->addValue($v, $column->name);
+    }
+
     protected function autoColumn(DBColumn $column)
     {
         if (!$column->is_auto_increment) return;
+    }
+
+    protected function typeCast(DBColumn $column)
+    {
+        foreach (Config::type_casts() as $type => $cast) {
+            if (0 === stripos($type, 'type:')) {
+                if (!($ntype = preg_replace('/type:/i', '', $type))) return null;
+                $dtype = preg_replace('/(\((.*?)?\))/', '', $ntype);
+                if (!$column->type->{'is' . ucfirst($dtype)}) return null;
+                return 0 === strcasecmp($column->column_type, $ntype) ? $cast : null;
+            } elseif (false !== stripos($type, '%')) {
+                $regex = $type;
+                if (0 === stripos($regex, '%')) $regex = '^' . $regex;
+                if (0 === strcasecmp('%', substr($type, -1, 1))) $regex = $regex . '$';
+                $regex = str_ireplace('%', '(.*?)', preg_replace('/[%]+/', '%', $regex));
+                if (preg_match($regex, $column->name)) return $cast;
+            }
+        }
+        return null;
     }
 
     public function __toString()

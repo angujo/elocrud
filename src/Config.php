@@ -20,6 +20,7 @@ use Angujo\DBReader\Models\ForeignKey;
  * @method static array soft_delete_columns();
  * @method static array create_columns();
  * @method static array update_columns();
+ * @method static array type_casts();
  */
 class Config
 {
@@ -40,6 +41,7 @@ class Config
         'base_dir' => Helper::BASE_DIR,
         'composite_keys' => true,
         'namespace' => 'App\Models',
+        'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean']
     ];
 
     public static function relationFunctionName(ForeignKey $foreignKey, $strictly = self::AUTO)
