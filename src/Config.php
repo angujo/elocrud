@@ -10,7 +10,7 @@ use Angujo\DBReader\Models\ForeignKey;
  * Class Config
  * @package Angujo\Elocrud
  *
- * @method static string model_class($name=null);
+ * @method static string model_class($name = null);
  * @method static string relation_name();
  * @method static string relation_remove_prx();
  * @method static string relation_remove_sfx();
@@ -23,9 +23,10 @@ class Config
     const CLASS_NAME = 'table';
     const COLUMN_NAME = 'column';
     const CONSTRAINT_NAME = 'constraint';
+    const AUTO = 'auto';
 
     private static $_defaults = [
-        'relation_name' => self::COLUMN_NAME,
+        'relation_name' => self::AUTO,
         'relation_remove_prx' => 'fk',
         'relation_remove_sfx' => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
@@ -35,7 +36,7 @@ class Config
         'namespace' => 'App\Models',
     ];
 
-    public static function relationFunctionName(ForeignKey $foreignKey, $strictly = null)
+    public static function relationFunctionName(ForeignKey $foreignKey, $strictly = self::AUTO)
     {
         $strictly = null === $strictly || !is_string($strictly) ? self::relation_name() : $strictly;
         switch ($strictly) {
@@ -43,16 +44,35 @@ class Config
                 $clsName = Helper::className($foreignKey->foreign_table_name);
                 break;
             case self::CONSTRAINT_NAME:
-                $clsName = Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?(' . self::relation_remove_prx() . '|' . self::relation_remove_sfx() . ')$))/i', '', $foreignKey->name), "_"));
+                $clsName = self::cleanClassName($foreignKey->name);
                 break;
             case self::COLUMN_NAME:
-                $name=$foreignKey->isOneToOne()?$foreignKey->column_name:$foreignKey->foreign_column_name;
-                $clsName = Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?' . self::relation_remove_sfx() . '$))/i', '', $name), "_"));
+                $clsName = self::cleanClassName($foreignKey->isOneToOne() && !$foreignKey->unique_colmn ? $foreignKey->column_name : $foreignKey->foreign_column_name);
                 break;
             default:
-                return self::relationFunctionName($foreignKey, self::COLUMN_NAME);
+                $clsName = self::autoRelationNaming($foreignKey);
         }
         return lcfirst($clsName);
+    }
+
+    protected static function autoRelationNaming(ForeignKey $foreignKey)
+    {
+        if ($foreignKey->isOneToOne()) {
+            if ($foreignKey->unique_colmn) {
+                return 0 === strcasecmp(self::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
+                    Helper::className($foreignKey->foreign_table_name) :
+                    self::cleanClassName($foreignKey->foreign_column_name);
+            }
+            return self::cleanClassName($foreignKey->column_name);
+        }
+
+        return 0 === strcasecmp(self::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
+            Helper::className($foreignKey->foreign_table_name) :self::cleanClassName($foreignKey->foreign_column_name);
+    }
+
+    protected static function cleanClassName($name)
+    {
+        return Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?(' . self::relation_remove_prx() . '|' . self::relation_remove_sfx() . ')$))/i', '', $name), "_"));
     }
 
     public static function __callStatic($method, $args)
