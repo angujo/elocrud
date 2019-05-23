@@ -82,6 +82,6 @@ class Helper
     public static function makeDir($path)
     {
         $path = trim($path, "\\/");
-        if (!file_exists($path) && !is_dir($path)) mkdir($path);
+        if (!file_exists($path) && !is_dir($path)) mkdir($path,0777,true);
     }
 }

@@ -46,7 +46,7 @@ class Config
                 $clsName = Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?(' . self::relation_remove_prx() . '|' . self::relation_remove_sfx() . ')$))/i', '', $foreignKey->name), "_"));
                 break;
             case self::COLUMN_NAME:
-                $name=$foreignKey->column_name;
+                $name=$foreignKey->isOneToOne()?$foreignKey->column_name:$foreignKey->foreign_column_name;
                 $clsName = Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?' . self::relation_remove_sfx() . '$))/i', '', $name), "_"));
                 break;
             default:

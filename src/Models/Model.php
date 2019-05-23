@@ -73,7 +73,7 @@ class Model
 
     protected function setForeignKeys()
     {
-        $this->table->foreign_keys_one_to_one->merge($this->table->foreign_keys_one_to_many)->each(function (ForeignKey $foreignKey) {
+        $this->table->foreign_keys_one_to_many->each(function (ForeignKey $foreignKey) {
             $method = Method::fromForeignKey($foreignKey, $this->namespace);
             $this->imports = array_merge($this->imports, $method->getImports());
         });

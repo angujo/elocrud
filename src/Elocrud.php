@@ -20,9 +20,10 @@ class Elocrud
 
     public function modelsOutput(\Closure $closure)
     {
-        $this->database->tables->each(function (DBTable $table) use ($closure) {
-            $closure(new Model($table));
-        });
+        $closure(new Model(Database::getTable($this->database->name,'subscriptions')));
+        // $this->database->tables->each(function (DBTable $table) use ($closure) {
+        //     $closure(new Model($table));
+        // });
     }
 
     public function writeModels()
