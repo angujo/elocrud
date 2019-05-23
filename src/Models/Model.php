@@ -56,14 +56,22 @@ class Model
     protected function setColumns()
     {
         $timeStamp = 0;
+        if ($this->table->primary_columns->count() > 0) {
+            $pk = null;
+            if ($this->table->primary_columns->count() > 1) Property::attribute('protected', 'primaryKey', array_values($this->table->primary_columns->map(function (DBColumn $column) { return $column->name; })->all()), 'Primary Keys')->setType('array');
+            else {
+                $column = $this->table->primary_columns->first();
+                if (0 !== strcasecmp('id', $column->name)) Property::attribute('protected', 'primaryKey', $column->name, 'Primary Key')->setType('string');
+                if (!$column->is_auto_increment) Property::attribute('protected', 'incrementing', false, 'Primary Key is not auto-incrementing')->setType('boolean');
+                if (!$column->type->isInt) Property::attribute('protected', 'keyType', 'string', 'The "type" of the auto-incrementing ID')->setType('string');
+            }
+        }
         $this->table->columns->each(function (DBColumn $column) use (&$timeStamp) {
             Property::fromColumn($column);
-            if (in_array($column->name, ['created_at', 'updated_at']) && $column->type->isDateTime) $timeStamp++;
-            if (!$column->is_primary && !$column->is_auto_increment) {
+            if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) && $column->type->isDateTime) $timeStamp++;
+            if (!$column->is_auto_increment) {
                 $this->fillables->addValue($column->name);
                 $this->defaultColumn($column);
-            } else {
-                $this->primaryColumn($column);
             }
             $this->softDeletes($column);
             $this->dates($column);
@@ -88,7 +96,7 @@ class Model
 
     protected function softDeletes(DBColumn $column)
     {
-        if (0 !== strcasecmp($column->name, 'deleted_at') || !$column->type->isDateTime) return;
+        if (!in_array($column->name, Config::soft_delete_columns()) || !$column->type->isDateTime) return;
         $this->uses[] = SoftDeletes::class;
         $this->imports[] = SoftDeletes::class;
     }
@@ -103,14 +111,6 @@ class Model
     protected function autoColumn(DBColumn $column)
     {
         if (!$column->is_auto_increment) return;
-    }
-
-    protected function primaryColumn(DBColumn $column)
-    {
-        if (!$column->is_primary) return;
-        if (0 !== strcasecmp('id', $column->name)) Property::attribute('protected', 'primaryKey', $column->name, 'Primary Key')->setType('string');
-        if (!$column->is_auto_increment) Property::attribute('protected', 'incrementing', false, 'Primary Key is not auto-incrementing')->setType('boolean');
-        if (!$column->type->isInt) Property::attribute('protected', 'keyType', 'string', 'The "type" of the auto-incrementing ID')->setType('string');
     }
 
     public function __toString()

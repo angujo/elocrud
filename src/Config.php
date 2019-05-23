@@ -17,6 +17,9 @@ use Angujo\DBReader\Models\ForeignKey;
  * @method static string eloquent_extension_name();
  * @method static string namespace();
  * @method static bool composite_keys();
+ * @method static array soft_delete_columns();
+ * @method static array create_columns();
+ * @method static array update_columns();
  */
 class Config
 {
@@ -27,6 +30,9 @@ class Config
 
     private static $_defaults = [
         'relation_name' => self::AUTO,
+        'soft_delete_columns' => ['deleted_at'],
+        'create_columns' => ['created_at'],
+        'update_columns' => ['updated_at'],
         'relation_remove_prx' => 'fk',
         'relation_remove_sfx' => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
@@ -67,7 +73,7 @@ class Config
         }
 
         return 0 === strcasecmp(self::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
-            Helper::className($foreignKey->foreign_table_name) :self::cleanClassName($foreignKey->foreign_column_name);
+            Helper::className($foreignKey->foreign_table_name) : self::cleanClassName($foreignKey->foreign_column_name);
     }
 
     protected static function cleanClassName($name)
