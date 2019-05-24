@@ -1,15 +1,12 @@
 <?php
 
-
 namespace Angujo\Elocrud;
-
 
 use Angujo\DBReader\Models\ForeignKey;
 
 /**
- * Class Config
+ * Class Config.
  *
- * @package Angujo\Elocrud
  *
  * @method static string model_class($name = null);
  * @method static string relation_name();
@@ -26,10 +23,10 @@ use Angujo\DBReader\Models\ForeignKey;
  */
 class Config
 {
-    const CLASS_NAME      = 'table';
-    const COLUMN_NAME     = 'column';
+    const CLASS_NAME = 'table';
+    const COLUMN_NAME = 'column';
     const CONSTRAINT_NAME = 'constraint';
-    const AUTO            = 'auto';
+    const AUTO = 'auto';
 
     private static $_defaults = [
         'relation_name'           => self::AUTO,
@@ -63,6 +60,7 @@ class Config
             default:
                 $clsName = self::autoRelationNaming($foreignKey);
         }
+
         return lcfirst($clsName);
     }
 
@@ -74,6 +72,7 @@ class Config
                     Helper::className($foreignKey->foreign_table_name) :
                     self::cleanClassName($foreignKey->foreign_column_name);
             }
+
             return self::cleanClassName($foreignKey->column_name);
         }
 
@@ -83,25 +82,26 @@ class Config
 
     public static function base_namespace()
     {
-        return self::namespace() . '\BaseTables';
+        return self::namespace().'\BaseTables';
     }
 
     protected static function cleanClassName($name)
     {
-        return Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?(' . self::relation_remove_prx() . '|' . self::relation_remove_sfx() . ')$))/i', '', $name), "_"));
+        return Helper::className(trim(preg_replace('/((^'.self::relation_remove_prx().'(_)?)|((_)?('.self::relation_remove_prx().'|'.self::relation_remove_sfx().')$))/i', '', $name), '_'));
     }
 
     public static function __callStatic($method, $args)
     {
         if (!array_key_exists($method, self::$_defaults)) {
-            return null;
+            return;
         }
         if (function_exists('config')) {
-            return config('elocrud.' . $method, self::$_defaults[$method]);
+            return config('elocrud.'.$method, self::$_defaults[$method]);
         }
         if (!empty($args)) {
             self::$_defaults[$method] = array_shift($args);
         }
+
         return self::$_defaults[$method];
     }
 
@@ -114,13 +114,14 @@ class Config
             self::$_defaults['base_dir'] = config('elocrud.base_dir', self::$_defaults['base_dir']);
         }
         if ($path) {
-            self::$_defaults['base_dir'] = trim($path, "\\/");
+            self::$_defaults['base_dir'] = trim($path, '\\/');
         }
+
         return self::$_defaults['base_dir'];
     }
 
     public static function base_dir($path = null)
     {
-        return self::dir_path($path) . '\BaseTables';
+        return self::dir_path($path).'\BaseTables';
     }
 }

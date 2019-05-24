@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Angujo\Elocrud\Models;
-
 
 use Angujo\DBReader\Models\DBColumn;
 use Angujo\Elocrud\Helper;
@@ -10,14 +8,14 @@ use Angujo\Elocrud\Helper;
 class Property
 {
     /**
-     * For property of phpdoc when method defined
+     * For property of phpdoc when method defined.
      *
      * @var string|string[]
      */
     private $params;
     /**
      * Internal for prefixing the property
-     * E.g [at]property for property
+     * E.g [at]property for property.
      *
      * @var string
      */
@@ -30,27 +28,27 @@ class Property
     private $access;
     /**
      * Return type for the property
-     * E.g. integer|string|bool
+     * E.g. integer|string|bool.
      *
      * @var string|string[]
      */
     private $type;
     /**
-     * Comment for the property
+     * Comment for the property.
      *
      * @var string
      */
     private $comment;
     /**
-     * Name of the property
+     * Name of the property.
      *
      * @var string
      */
     private $name;
     /**
-     * The default value of the property
+     * The default value of the property.
      *
-     * @var string|int|float|boolean
+     * @var string|int|float|bool
      */
     private $value;
 
@@ -72,7 +70,7 @@ class Property
 
     public static function fromColumn(DBColumn $column)
     {
-        self::constant(strtoupper($column->name), $column->name)->setComment('Column name: ' . $column->name);
+        self::constant(strtoupper($column->name), $column->name)->setComment('Column name: '.$column->name);
         //echo '<pre>';var_dump($column->type->isPhpinteger,$column->type->isInt,$column->data_type);
         $prop = self::phpdocProperty($column->name, $column->type->phpName(), Helper::toWords($column->name));
         if ($column->is_nullable && !$column->is_primary && !$column->is_auto_increment) {
@@ -103,7 +101,6 @@ class Property
     {
         return self::phpdoc($name, $type, $comment)->setPrefix('@method');
     }
-
 
     /**
      * @param      $name
@@ -153,7 +150,7 @@ class Property
     public static function getPhpDocText()
     {
         if (empty(self::$instances['phpdoc'])) {
-            return null;
+            return;
         }
         $output = [];
         /** @var Property $property */
@@ -161,24 +158,27 @@ class Property
             if (!$property->getName()) {
                 continue;
             }
-            $content  = 0 === strcasecmp('@property', $property->getPrefix()) ? ' * ${prefix} ${type} $${name} ${comments};' : ' * ${prefix} ${type} ${name}(${params}) ${comments}';
-            $content  = str_ireplace('${prefix}', $property->getPrefix(), $content);
-            $content  = str_ireplace('${comments}', $property->getComment(), $content);
-            $content  = str_ireplace('${name}', $property->getName(), $content);
-            $content  = str_ireplace('${type}', $property->getType(true), $content);
-            $content  = str_ireplace('${params}', (is_array($property->getParams()) ? implode(', ', array_filter(array_map(function ($p, $k) { return is_string($k) ? $k . '=' . var_export($p, true) : $p; }, $property->getType(true)))) : $property->getType(true)), $content);
+            $content = 0 === strcasecmp('@property', $property->getPrefix()) ? ' * ${prefix} ${type} $${name} ${comments};' : ' * ${prefix} ${type} ${name}(${params}) ${comments}';
+            $content = str_ireplace('${prefix}', $property->getPrefix(), $content);
+            $content = str_ireplace('${comments}', $property->getComment(), $content);
+            $content = str_ireplace('${name}', $property->getName(), $content);
+            $content = str_ireplace('${type}', $property->getType(true), $content);
+            $content = str_ireplace('${params}', (is_array($property->getParams()) ? implode(', ', array_filter(array_map(function ($p, $k) {
+                return is_string($k) ? $k.'='.var_export($p, true) : $p;
+            }, $property->getType(true)))) : $property->getType(true)), $content);
             $output[] = $content;
         }
+
         return Helper::cleanPlaceholder(implode("\n", array_unique($output)));
     }
 
     public static function getConstantText()
     {
         if (empty(self::$instances['constant'])) {
-            return null;
+            return;
         }
-        $_content = file_get_contents(Helper::BASE_DIR . '/stubs/property2-template.tmpl');
-        $output   = '';
+        $_content = file_get_contents(Helper::BASE_DIR.'/stubs/property2-template.tmpl');
+        $output = '';
         /** @var Property $property */
         foreach (self::$instances['constant'] as $property) {
             if (!$property->getName()) {
@@ -187,21 +187,22 @@ class Property
             $content = $_content;
             $content = str_ireplace('${type}', 'const ', $content);
             $content = str_ireplace('${comments}', $property->getComment(), $content);
-            $content = str_ireplace('${access}', ($property->getAccess() ?: 'public') . ' ', $content);
+            $content = str_ireplace('${access}', ($property->getAccess() ?: 'public').' ', $content);
             $content = str_ireplace('${name}', $property->getName(), $content);
             $content = str_ireplace('${value}', var_export($property->getValue(), true), $content);
-            $output  .= $content . "\n";
+            $output .= $content."\n";
         }
+
         return Helper::cleanPlaceholder($output);
     }
 
     public static function getAttributeText()
     {
         if (empty(self::$instances['attribute'])) {
-            return null;
+            return;
         }
-        $_content = file_get_contents(Helper::BASE_DIR . '/stubs/property-template.tmpl');
-        $output   = '';
+        $_content = file_get_contents(Helper::BASE_DIR.'/stubs/property-template.tmpl');
+        $output = '';
         /** @var Property $property */
         foreach (self::$instances['attribute'] as $property) {
             if (!$property->getName()) {
@@ -211,18 +212,19 @@ class Property
             if (!$property->getComment()) {
                 self::replaceEmpty('comments', $content);
             } else {
-                $content = str_ireplace('${comments}', '* ' . $property->getComment(), $content);
+                $content = str_ireplace('${comments}', '* '.$property->getComment(), $content);
             }
             if (!$property->getType()) {
                 self::replaceEmpty('var', $content);
             } else {
-                $content = str_ireplace('${var}', '* @var ' . (is_array($property->getType()) ? implode('|', $property->getType()) : $property->getType()), $content);
+                $content = str_ireplace('${var}', '* @var '.(is_array($property->getType()) ? implode('|', $property->getType()) : $property->getType()), $content);
             }
-            $content = str_ireplace('${access}', ($property->getAccess() ?: 'public') . ' ', $content);
-            $content = str_ireplace('${name}', $property->getName() . ' ', $content);
+            $content = str_ireplace('${access}', ($property->getAccess() ?: 'public').' ', $content);
+            $content = str_ireplace('${name}', $property->getName().' ', $content);
             $content = str_ireplace('${value}', Helper::valueExport($property->getValue()), $content);
-            $output  .= $content . "\n";
+            $output .= $content."\n";
         }
+
         return Helper::cleanPlaceholder($output);
     }
 
@@ -236,7 +238,7 @@ class Property
 
     protected static function replaceEmpty($property, &$content)
     {
-        return $content = preg_replace("/(\s+)?\$\{" . $property . "\}\n/", '', $content);
+        return $content = preg_replace("/(\s+)?\$\{".$property."\}\n/", '', $content);
     }
 
     /**
@@ -247,6 +249,7 @@ class Property
     public function setComment($comment)
     {
         $this->comment = $comment;
+
         return $this;
     }
 
@@ -258,6 +261,7 @@ class Property
     public function setType($type)
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -269,6 +273,7 @@ class Property
     public function setAccess($access)
     {
         $this->access = $access;
+
         return $this;
     }
 
@@ -280,6 +285,7 @@ class Property
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -291,6 +297,7 @@ class Property
     public function setValue($value)
     {
         $this->value = is_string($value) ? preg_replace('/\s+/i', ' ', $value) : $value;
+
         return $this;
     }
 
@@ -300,6 +307,7 @@ class Property
             $this->type = empty($this->type) ? [] : [$this->type];
         }
         $this->type[] = $type;
+
         return $this;
     }
 
@@ -309,11 +317,12 @@ class Property
         if (!is_array($this->value)) {
             $this->value = empty($this->value) ? [] : [$this->value];
         }
-        if (is_string($key) || (is_numeric($key) && (int)$key)) {
+        if (is_string($key) || (is_numeric($key) && (int) $key)) {
             $this->value[$key] = $value;
         } else {
             $this->value[] = $value;
         }
+
         return $this;
     }
 
@@ -325,6 +334,7 @@ class Property
     private function setPrefix($prefix)
     {
         $this->prefix = $prefix;
+
         return $this;
     }
 
@@ -354,6 +364,7 @@ class Property
         if ($string && is_array($this->type)) {
             return implode('|', $this->type);
         }
+
         return $this->type;
     }
 
@@ -389,6 +400,7 @@ class Property
     public function setParams($params)
     {
         $this->params = $params;
+
         return $this;
     }
 }

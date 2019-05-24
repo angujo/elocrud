@@ -1,15 +1,13 @@
 <?php
 
-
 namespace Angujo\Elocrud;
-
 
 class Helper
 {
     const BASE_DIR = __DIR__;
 
     /**
-     * Replace a placeholder
+     * Replace a placeholder.
      *
      * @param $search
      * @param $replace
@@ -19,7 +17,7 @@ class Helper
      */
     public static function replacePlaceholder($search, $replace, $content)
     {
-        return preg_replace('/\${' . $search . '}/i', $replace, $content);
+        return preg_replace('/\${'.$search.'}/i', $replace, $content);
     }
 
     /**
@@ -36,7 +34,7 @@ class Helper
     }
 
     /**
-     * Convert to carmelCase
+     * Convert to carmelCase.
      *
      * @param $name
      *
@@ -44,7 +42,9 @@ class Helper
      */
     public static function carmelCase($name)
     {
-        return str_ireplace('_', '', preg_replace_callback('/(^|_)([a-z])/i', function ($m) { return strtoupper($m[0]); }, $name));
+        return str_ireplace('_', '', preg_replace_callback('/(^|_)([a-z])/i', function ($m) {
+            return strtoupper($m[0]);
+        }, $name));
     }
 
     public static function toWords($content)
@@ -53,7 +53,7 @@ class Helper
     }
 
     /**
-     * Get basename
+     * Get basename.
      *
      * @param $name
      *
@@ -62,11 +62,12 @@ class Helper
     public static function baseName($name)
     {
         $name = array_filter(preg_split("/[\/]/i", str_ireplace('\\', '/', $name)), 'trim');
+
         return array_pop($name);
     }
 
     /**
-     * Get corresponding classname equivalent
+     * Get corresponding classname equivalent.
      *
      * @param $name
      *
@@ -78,7 +79,7 @@ class Helper
     }
 
     /**
-     * Streamline var_export to ensure arrays do not have the numbering indices
+     * Streamline var_export to ensure arrays do not have the numbering indices.
      *
      * @param $value
      *
@@ -89,12 +90,13 @@ class Helper
         if (is_array($value)) {
             return preg_replace('/\s+/', ' ', preg_replace('/(([\d]+(\s+)?\=\>(\s+)?)|\s+)/i', ' ', var_export($value, true)));
         }
+
         return var_export($value, true);
     }
 
     public static function makeDir($path)
     {
-        $path = trim($path, "\\/");
+        $path = trim($path, '\\/');
         if (!file_exists($path) && !is_dir($path)) {
             mkdir($path, 0777, true);
         }

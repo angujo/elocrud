@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Angujo\Elocrud\Models;
-
 
 use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\Config;
@@ -42,7 +40,7 @@ class Method
         if (null !== $name && !is_string($name) && !is_numeric($name)) {
             return;
         }
-        self::$c_name            = null !== $name ? $name : self::$def_name;
+        self::$c_name = null !== $name ? $name : self::$def_name;
         self::$me[self::$c_name] = [];
     }
 
@@ -53,24 +51,25 @@ class Method
         $method->namespace = $namespace;
         $method->addComment('Relationship method to call constraint class!');
         if ($foreignKey->isOneToOne()) {
-            $method->setOutput('$this->hasOne(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
+            $method->setOutput('$this->hasOne('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
             $method->setOutputType(Helper::baseName(HasOne::class));
             $method->imports[] = HasOne::class;
             Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
             if (Config::base_abstract()) {
-                $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+                $method->imports[] = Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name);
             }
         }
         if ($foreignKey->isOneToMany()) {
-            $method->setOutput('$this->hasMany(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
+            $method->setOutput('$this->hasMany('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
             $method->setOutputType(Helper::baseName(HasMany::class));
             $method->imports[] = Collection::class;
             $method->imports[] = HasMany::class;
-            Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name) . '[]', Helper::toWords($foreignKey->name))->addType('Collection');
+            Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name).'[]', Helper::toWords($foreignKey->name))->addType('Collection');
             if (Config::base_abstract()) {
-                $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+                $method->imports[] = Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name);
             }
         }
+
         return $method;
     }
 
@@ -79,7 +78,7 @@ class Method
         if (!$this->getName()) {
             return '';
         }
-        $content = file_get_contents(Helper::BASE_DIR . '/stubs/function-template.tmpl');
+        $content = file_get_contents(Helper::BASE_DIR.'/stubs/function-template.tmpl');
         $content = Helper::replacePlaceholder('description', $this->getComment(true), $content);
         $content = Helper::replacePlaceholder('returns', $this->getOutputType(), $content);
         $content = Helper::replacePlaceholder('access', $this->getAccess(), $content);
@@ -88,6 +87,7 @@ class Method
         $content = Helper::replacePlaceholder('run', $this->getRun(true), $content);
         $content = Helper::replacePlaceholder('return', $this->isReturns() ? 'return ' : '', $content);
         $content = Helper::replacePlaceholder('output', $this->getOutput(), $content);
+
         return Helper::cleanPlaceholder($content);
     }
 
@@ -101,8 +101,9 @@ class Method
         $entries = (self::$me[$name]);
         /** @var Method $method */
         foreach ($entries as $method) {
-            $content .= "\n\n" . $method;
+            $content .= "\n\n".$method;
         }
+
         return $content;
     }
 
@@ -138,6 +139,7 @@ class Method
     public function setOutputType($output_type)
     {
         $this->output_type = $output_type;
+
         return $this;
     }
 
@@ -154,12 +156,13 @@ class Method
      *
      * @return Method
      */
-    public function setAccess(string $access): Method
+    public function setAccess(string $access): self
     {
         if (!in_array($access, ['public', 'protected', 'private'])) {
             $access = 'public';
         }
         $this->access = $access;
+
         return $this;
     }
 
@@ -179,6 +182,7 @@ class Method
     public function setOutput($output)
     {
         $this->output = $output;
+
         return $this;
     }
 
@@ -195,9 +199,10 @@ class Method
      *
      * @return Method
      */
-    public function setReturns(bool $returns): Method
+    public function setReturns(bool $returns): self
     {
         $this->returns = $returns;
+
         return $this;
     }
 
@@ -214,9 +219,10 @@ class Method
      *
      * @return Method
      */
-    public function setStatic(bool $static): Method
+    public function setStatic(bool $static): self
     {
         $this->static = $static;
+
         return $this;
     }
 
@@ -230,6 +236,7 @@ class Method
         if (is_array($this->comment) && $string) {
             return implode("\n\t* ", $this->comment);
         }
+
         return $this->comment ? $this->comment : '*';
     }
 
@@ -241,6 +248,7 @@ class Method
     public function setComment($comment)
     {
         $this->comment = $comment;
+
         return $this;
     }
 
@@ -260,6 +268,7 @@ class Method
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -273,6 +282,7 @@ class Method
         if (is_array($this->run) && $string) {
             return implode("\t\n", $this->run);
         }
+
         return $this->run;
     }
 
@@ -284,6 +294,7 @@ class Method
     public function setRun($run)
     {
         $this->run = $run;
+
         return $this;
     }
 
@@ -293,6 +304,7 @@ class Method
             $this->run = $this->run ? [$this->run] : [];
         }
         $this->run[] = $run;
+
         return $this;
     }
 
@@ -302,6 +314,7 @@ class Method
             $this->comment = $this->comment ? [$this->comment] : [];
         }
         $this->comment[] = $comment;
+
         return $this;
     }
 
