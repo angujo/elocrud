@@ -83,12 +83,12 @@ class Config
 
     public static function base_namespace()
     {
-        return self::namespace() . '\BaseTables';
+        return self::namespace().'\BaseTables';
     }
 
     protected static function cleanClassName($name)
     {
-        return Helper::className(trim(preg_replace('/((^' . self::relation_remove_prx() . '(_)?)|((_)?(' . self::relation_remove_prx() . '|' . self::relation_remove_sfx() . ')$))/i', '', $name), "_"));
+        return Helper::className(trim(preg_replace('/((^'.self::relation_remove_prx().'(_)?)|((_)?('.self::relation_remove_prx().'|'.self::relation_remove_sfx().')$))/i', '', $name), "_"));
     }
 
     public static function __callStatic($method, $args)
@@ -97,7 +97,7 @@ class Config
             return null;
         }
         if (function_exists('config')) {
-            return config('elocrud.' . $method, self::$_defaults[$method]);
+            return config('elocrud.'.$method, self::$_defaults[$method]);
         }
         if (!empty($args)) {
             self::$_defaults[$method] = array_shift($args);
@@ -121,6 +121,6 @@ class Config
 
     public static function base_dir($path = null)
     {
-        return self::dir_path($path) . '\BaseTables';
+        return self::dir_path($path).'\BaseTables';
     }
 }

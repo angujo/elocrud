@@ -72,7 +72,7 @@ class Property
 
     public static function fromColumn(DBColumn $column)
     {
-        self::constant(strtoupper($column->name), $column->name)->setComment('Column name: ' . $column->name);
+        self::constant(strtoupper($column->name), $column->name)->setComment('Column name: '.$column->name);
         //echo '<pre>';var_dump($column->type->isPhpinteger,$column->type->isInt,$column->data_type);
         $prop = self::phpdocProperty($column->name, $column->type->phpName(), Helper::toWords($column->name));
         if ($column->is_nullable && !$column->is_primary && !$column->is_auto_increment) {
@@ -166,7 +166,7 @@ class Property
             $content  = str_ireplace('${comments}', $property->getComment(), $content);
             $content  = str_ireplace('${name}', $property->getName(), $content);
             $content  = str_ireplace('${type}', $property->getType(true), $content);
-            $content  = str_ireplace('${params}', (is_array($property->getParams()) ? implode(', ', array_filter(array_map(function ($p, $k) { return is_string($k) ? $k . '=' . var_export($p, true) : $p; }, $property->getType(true)))) : $property->getType(true)), $content);
+            $content  = str_ireplace('${params}', (is_array($property->getParams()) ? implode(', ', array_filter(array_map(function ($p, $k) { return is_string($k) ? $k.'='.var_export($p, true) : $p; }, $property->getType(true)))) : $property->getType(true)), $content);
             $output[] = $content;
         }
         return Helper::cleanPlaceholder(implode("\n", array_unique($output)));
@@ -177,7 +177,7 @@ class Property
         if (empty(self::$instances['constant'])) {
             return null;
         }
-        $_content = file_get_contents(Helper::BASE_DIR . '/stubs/property2-template.tmpl');
+        $_content = file_get_contents(Helper::BASE_DIR.'/stubs/property2-template.tmpl');
         $output   = '';
         /** @var Property $property */
         foreach (self::$instances['constant'] as $property) {
@@ -187,10 +187,10 @@ class Property
             $content = $_content;
             $content = str_ireplace('${type}', 'const ', $content);
             $content = str_ireplace('${comments}', $property->getComment(), $content);
-            $content = str_ireplace('${access}', ($property->getAccess() ?: 'public') . ' ', $content);
+            $content = str_ireplace('${access}', ($property->getAccess() ?: 'public').' ', $content);
             $content = str_ireplace('${name}', $property->getName(), $content);
             $content = str_ireplace('${value}', var_export($property->getValue(), true), $content);
-            $output  .= $content . "\n";
+            $output  .= $content."\n";
         }
         return Helper::cleanPlaceholder($output);
     }
@@ -200,7 +200,7 @@ class Property
         if (empty(self::$instances['attribute'])) {
             return null;
         }
-        $_content = file_get_contents(Helper::BASE_DIR . '/stubs/property-template.tmpl');
+        $_content = file_get_contents(Helper::BASE_DIR.'/stubs/property-template.tmpl');
         $output   = '';
         /** @var Property $property */
         foreach (self::$instances['attribute'] as $property) {
@@ -211,17 +211,17 @@ class Property
             if (!$property->getComment()) {
                 self::replaceEmpty('comments', $content);
             } else {
-                $content = str_ireplace('${comments}', '* ' . $property->getComment(), $content);
+                $content = str_ireplace('${comments}', '* '.$property->getComment(), $content);
             }
             if (!$property->getType()) {
                 self::replaceEmpty('var', $content);
             } else {
-                $content = str_ireplace('${var}', '* @var ' . (is_array($property->getType()) ? implode('|', $property->getType()) : $property->getType()), $content);
+                $content = str_ireplace('${var}', '* @var '.(is_array($property->getType()) ? implode('|', $property->getType()) : $property->getType()), $content);
             }
-            $content = str_ireplace('${access}', ($property->getAccess() ?: 'public') . ' ', $content);
-            $content = str_ireplace('${name}', $property->getName() . ' ', $content);
+            $content = str_ireplace('${access}', ($property->getAccess() ?: 'public').' ', $content);
+            $content = str_ireplace('${name}', $property->getName().' ', $content);
             $content = str_ireplace('${value}', Helper::valueExport($property->getValue()), $content);
-            $output  .= $content . "\n";
+            $output  .= $content."\n";
         }
         return Helper::cleanPlaceholder($output);
     }
@@ -236,7 +236,7 @@ class Property
 
     protected static function replaceEmpty($property, &$content)
     {
-        return $content = preg_replace("/(\s+)?\$\{" . $property . "\}\n/", '', $content);
+        return $content = preg_replace("/(\s+)?\$\{".$property."\}\n/", '', $content);
     }
 
     /**

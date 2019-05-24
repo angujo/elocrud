@@ -19,7 +19,7 @@ class Helper
      */
     public static function replacePlaceholder($search, $replace, $content)
     {
-        return preg_replace('/\${' . $search . '}/i', $replace, $content);
+        return preg_replace('/\${'.$search.'}/i', $replace, $content);
     }
 
     /**

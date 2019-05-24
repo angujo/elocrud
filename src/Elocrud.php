@@ -31,9 +31,9 @@ class Elocrud
         $this->extendLaravelModel();
         Helper::makeDir(Config::base_abstract() ? Config::base_dir() : Config::dir_path());
         $this->modelsOutput(function (Model $model) {
-            file_put_contents((Config::base_abstract() ? Config::base_dir() . '/Base' : Config::dir_path() . '/') . $model->fileName, (string)$model);
-            if (Config::base_abstract() && !file_exists(Config::dir_path() . '/' . $model->fileName)) {
-                file_put_contents(Config::dir_path() . '/' . $model->fileName, (string)$model->workingClassText());
+            file_put_contents((Config::base_abstract() ? Config::base_dir().'/Base' : Config::dir_path().'/').$model->fileName, (string)$model);
+            if (Config::base_abstract() && !file_exists(Config::dir_path().'/'.$model->fileName)) {
+                file_put_contents(Config::dir_path().'/'.$model->fileName, (string)$model->workingClassText());
             }
         });
     }
@@ -43,15 +43,15 @@ class Elocrud
         if (!Config::composite_keys()) {
             return;
         }
-        $path      = Config::dir_path() . '\Extensions';
-        $namespace = Config::namespace() . '\\Extensions';
+        $path      = Config::dir_path().'\Extensions';
+        $namespace = Config::namespace().'\\Extensions';
         Helper::makeDir($path);
-        $content = file_get_contents(Helper::BASE_DIR . '/stubs/laravel-model.tmpl');
+        $content = file_get_contents(Helper::BASE_DIR.'/stubs/laravel-model.tmpl');
         $content = Helper::replacePlaceholder('namespace', $namespace, $content);
         $content = Helper::replacePlaceholder('name', Config::eloquent_extension_name(), $content);
         $content = Helper::replacePlaceholder('extension', Config::model_class(), $content);
         $content = Helper::replacePlaceholder('extend', Helper::baseName(Config::model_class()), $content);
-        file_put_contents($path . '/' . Config::eloquent_extension_name() . '.php', $content);
-        Config::model_class($namespace . '\\' . Config::eloquent_extension_name());
+        file_put_contents($path.'/'.Config::eloquent_extension_name().'.php', $content);
+        Config::model_class($namespace.'\\'.Config::eloquent_extension_name());
     }
 }

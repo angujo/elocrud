@@ -53,22 +53,22 @@ class Method
         $method->namespace = $namespace;
         $method->addComment('Relationship method to call constraint class!');
         if ($foreignKey->isOneToOne()) {
-            $method->setOutput('$this->hasOne(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
+            $method->setOutput('$this->hasOne('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
             $method->setOutputType(Helper::baseName(HasOne::class));
             $method->imports[] = HasOne::class;
             Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
             if (Config::base_abstract()) {
-                $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+                $method->imports[] = Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name);
             }
         }
         if ($foreignKey->isOneToMany()) {
-            $method->setOutput('$this->hasMany(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
+            $method->setOutput('$this->hasMany('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
             $method->setOutputType(Helper::baseName(HasMany::class));
             $method->imports[] = Collection::class;
             $method->imports[] = HasMany::class;
-            Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name) . '[]', Helper::toWords($foreignKey->name))->addType('Collection');
+            Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name).'[]', Helper::toWords($foreignKey->name))->addType('Collection');
             if (Config::base_abstract()) {
-                $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+                $method->imports[] = Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name);
             }
         }
         return $method;
@@ -79,7 +79,7 @@ class Method
         if (!$this->getName()) {
             return '';
         }
-        $content = file_get_contents(Helper::BASE_DIR . '/stubs/function-template.tmpl');
+        $content = file_get_contents(Helper::BASE_DIR.'/stubs/function-template.tmpl');
         $content = Helper::replacePlaceholder('description', $this->getComment(true), $content);
         $content = Helper::replacePlaceholder('returns', $this->getOutputType(), $content);
         $content = Helper::replacePlaceholder('access', $this->getAccess(), $content);
@@ -101,7 +101,7 @@ class Method
         $entries = (self::$me[$name]);
         /** @var Method $method */
         foreach ($entries as $method) {
-            $content .= "\n\n" . $method;
+            $content .= "\n\n".$method;
         }
         return $content;
     }
