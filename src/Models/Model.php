@@ -161,7 +161,7 @@ class Model
     {
         $content = file_get_contents(Helper::BASE_DIR . '/stubs/model2-template.tmpl');
         $content = Helper::replacePlaceholder('class', $this->className, $content);
-        $content = Helper::replacePlaceholder('imports', 'use '.Config::base_namespace().'\\'.$this->abstractName.';', $content);
+        $content = Helper::replacePlaceholder('imports', 'use ' . Config::base_namespace() . '\\' . $this->abstractName . ';', $content);
         $content = Helper::replacePlaceholder('namespace', Config::namespace(), $content);
         $content = Helper::replacePlaceholder('description', '* Working class to be used for customized extension of DB Base Tables', $content);
         $content = Helper::replacePlaceholder('properties', '* Add properties here', $content);

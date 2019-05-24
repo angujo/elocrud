@@ -16,7 +16,7 @@ class Property
     private $params;
     /**
      * Internal for prefixing the property
-     * E.g @property for property
+     * E.g [at]property for property
      * @var string
      */
     private $prefix;
