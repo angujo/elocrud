@@ -32,13 +32,17 @@ class Method
     {
         self::$c_name = self::$def_name;
         $this->setName($name);
-        if (false === $fly) self::$me[self::$c_name][] = $this;
+        if (false === $fly) {
+            self::$me[self::$c_name][] = $this;
+        }
     }
 
     public static function init($name = null)
     {
-        if (null !== $name && !is_string($name) && !is_numeric($name)) return;
-        self::$c_name = null !== $name ? $name : self::$def_name;
+        if (null !== $name && !is_string($name) && !is_numeric($name)) {
+            return;
+        }
+        self::$c_name            = null !== $name ? $name : self::$def_name;
         self::$me[self::$c_name] = [];
     }
 
@@ -53,7 +57,9 @@ class Method
             $method->setOutputType(Helper::baseName(HasOne::class));
             $method->imports[] = HasOne::class;
             Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
-            if (Config::base_abstract()) $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+            if (Config::base_abstract()) {
+                $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+            }
         }
         if ($foreignKey->isOneToMany()) {
             $method->setOutput('$this->hasMany(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
@@ -61,14 +67,18 @@ class Method
             $method->imports[] = Collection::class;
             $method->imports[] = HasMany::class;
             Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name) . '[]', Helper::toWords($foreignKey->name))->addType('Collection');
-            if (Config::base_abstract()) $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+            if (Config::base_abstract()) {
+                $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+            }
         }
         return $method;
     }
 
     public function __toString()
     {
-        if (!$this->getName()) return '';
+        if (!$this->getName()) {
+            return '';
+        }
         $content = file_get_contents(Helper::BASE_DIR . '/stubs/function-template.tmpl');
         $content = Helper::replacePlaceholder('description', $this->getComment(true), $content);
         $content = Helper::replacePlaceholder('returns', $this->getOutputType(), $content);
@@ -84,7 +94,9 @@ class Method
     public static function textFormat($name = null)
     {
         $name = null === $name || !isset(self::$me[$name]) ? self::$def_name : $name;
-        if (!isset(self::$me[$name]) || !is_array(self::$me[$name])) return '';
+        if (!isset(self::$me[$name]) || !is_array(self::$me[$name])) {
+            return '';
+        }
         $content = '';
         $entries = (self::$me[$name]);
         /** @var Method $method */
@@ -120,6 +132,7 @@ class Method
 
     /**
      * @param mixed $output_type
+     *
      * @return Method
      */
     public function setOutputType($output_type)
@@ -138,11 +151,14 @@ class Method
 
     /**
      * @param string $access
+     *
      * @return Method
      */
     public function setAccess(string $access): Method
     {
-        if (!in_array($access, ['public', 'protected', 'private'])) $access = 'public';
+        if (!in_array($access, ['public', 'protected', 'private'])) {
+            $access = 'public';
+        }
         $this->access = $access;
         return $this;
     }
@@ -157,6 +173,7 @@ class Method
 
     /**
      * @param mixed $output
+     *
      * @return Method
      */
     public function setOutput($output)
@@ -175,6 +192,7 @@ class Method
 
     /**
      * @param bool $returns
+     *
      * @return Method
      */
     public function setReturns(bool $returns): Method
@@ -193,6 +211,7 @@ class Method
 
     /**
      * @param bool $static
+     *
      * @return Method
      */
     public function setStatic(bool $static): Method
@@ -203,16 +222,20 @@ class Method
 
     /**
      * @param bool $string
+     *
      * @return mixed
      */
     public function getComment($string = false)
     {
-        if (is_array($this->comment) && $string) return implode("\n\t* ", $this->comment);
+        if (is_array($this->comment) && $string) {
+            return implode("\n\t* ", $this->comment);
+        }
         return $this->comment ? $this->comment : '*';
     }
 
     /**
      * @param mixed $comment
+     *
      * @return Method
      */
     public function setComment($comment)
@@ -231,6 +254,7 @@ class Method
 
     /**
      * @param mixed $name
+     *
      * @return Method
      */
     public function setName($name)
@@ -241,16 +265,20 @@ class Method
 
     /**
      * @param bool $string
+     *
      * @return mixed
      */
     public function getRun($string = false)
     {
-        if (is_array($this->run) && $string) return implode("\t\n", $this->run);
+        if (is_array($this->run) && $string) {
+            return implode("\t\n", $this->run);
+        }
         return $this->run;
     }
 
     /**
      * @param mixed $run
+     *
      * @return Method
      */
     public function setRun($run)
@@ -261,14 +289,18 @@ class Method
 
     public function addRun($run)
     {
-        if (!is_array($this->run)) $this->run = $this->run ? [$this->run] : [];
+        if (!is_array($this->run)) {
+            $this->run = $this->run ? [$this->run] : [];
+        }
         $this->run[] = $run;
         return $this;
     }
 
     public function addComment($comment)
     {
-        if (!is_array($this->comment)) $this->comment = $this->comment ? [$this->comment] : [];
+        if (!is_array($this->comment)) {
+            $this->comment = $this->comment ? [$this->comment] : [];
+        }
         $this->comment[] = $comment;
         return $this;
     }

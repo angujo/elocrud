@@ -8,33 +8,33 @@ class Lang
 {
     private static $to_plural = [
         '/(s|ss|sh|ch|x|z|o|is)$/i' => '$1es',
-        '/(fe|f)$/i' => '$1ves',
-        '/(us)$/i' => '$1i',
-        '/(on)$/i' => '$1a',
-        '/([^aeiou]y)$/i' => '$1ies',
-        '/$/i' => '$1s',
+        '/(fe|f)$/i'                => '$1ves',
+        '/(us)$/i'                  => '$1i',
+        '/(on)$/i'                  => '$1a',
+        '/([^aeiou]y)$/i'           => '$1ies',
+        '/$/i'                      => '$1s',
     ];
     private static $to_single = [
-        '/(z)zes$/i' => "$1",
-        '/(matr)ices$/i' => "$1ix",
-        '/(vert|ind)ices$/i' => "$1ex",
-        '/i$/i' => "us",
-        '/(cris|ax|test|s)es$/i' => "$1is",
-        '/(shoe)s$/i' => "$1",
-        '/(o)es$/i' => "$1",
-        '/(bus)es$/i' => "$1",
-        '/([m|l])ice$/i' => "$1ouse",
-        '/(x|ch|ss|sh|s)es$/i' => "$1",
-        '/([^aeiouy]|qu|v)ies$/i' => "$1y",
-        '/([lr])ves$/i' => "$1f",
-        '/(li|wi|kni)ves$/i' => "$1fe",
-        '/(shea|loa|lea|thie)ves$/i' => "$1f",
+        '/(z)zes$/i'                                                       => "$1",
+        '/(matr)ices$/i'                                                   => "$1ix",
+        '/(vert|ind)ices$/i'                                               => "$1ex",
+        '/i$/i'                                                            => "us",
+        '/(cris|ax|test|s)es$/i'                                           => "$1is",
+        '/(shoe)s$/i'                                                      => "$1",
+        '/(o)es$/i'                                                        => "$1",
+        '/(bus)es$/i'                                                      => "$1",
+        '/([m|l])ice$/i'                                                   => "$1ouse",
+        '/(x|ch|ss|sh|s)es$/i'                                             => "$1",
+        '/([^aeiouy]|qu|v)ies$/i'                                          => "$1y",
+        '/([lr])ves$/i'                                                    => "$1f",
+        '/(li|wi|kni)ves$/i'                                               => "$1fe",
+        '/(shea|loa|lea|thie)ves$/i'                                       => "$1f",
         '/((a)naly|(b)a|(d)iagno|(p)arenthe|(p)rogno|(s)ynop|(t)he)ses$/i' => "$1$2sis",
-        '/([ti])a$/i' => "$1um",
-        '/(h|bl)ouses$/i' => "$1ouse",
-        '/(corpse)s$/i' => "$1",
-        '/(us)es$/i' => "$1",
-        '/s$/i' => ""];
+        '/([ti])a$/i'                                                      => "$1um",
+        '/(h|bl)ouses$/i'                                                  => "$1ouse",
+        '/(corpse)s$/i'                                                    => "$1",
+        '/(us)es$/i'                                                       => "$1",
+        '/s$/i'                                                            => ""];
     private static $irregular = ['fungus' => 'fungi', 'nucleus' => 'nuclei', 'cactus' => 'cacti', 'alumnus' => 'alumni', 'octopus' => 'octopi', 'ox' => 'oxen'];
     private static $uncountable = ['accommodation', 'advertising', 'air', 'aid', 'advice', 'anger', 'art', 'assistance', 'bread', 'business', 'butter', 'calm', 'cash', 'chaos', 'cheese ', 'childhood', 'clothing',
         'coffee ', 'content', 'corruption', 'courage', 'currency', 'damage', 'danger ', 'darkness', 'data', 'determination', 'economics', 'education', 'electricity', 'employment', 'energy', 'entertainment', 'enthusiasm',
@@ -48,24 +48,36 @@ class Lang
 
     public static function toPlural($word)
     {
-        if (in_array($word, self::$uncountable)) return $word;
+        if (in_array($word, self::$uncountable)) {
+            return $word;
+        }
         foreach (self::$irregular as $plur => $sing) {
-            if (0 === strcasecmp($word, $sing)) return $plur;
+            if (0 === strcasecmp($word, $sing)) {
+                return $plur;
+            }
         }
         foreach (self::$to_plural as $regex => $pattern) {
-            if (preg_match($regex, $word)) return preg_replace($regex, $pattern, $word);
+            if (preg_match($regex, $word)) {
+                return preg_replace($regex, $pattern, $word);
+            }
         }
         return $word;
     }
 
     public static function toSingle($word)
     {
-        if (in_array($word, self::$uncountable)) return $word;
+        if (in_array($word, self::$uncountable)) {
+            return $word;
+        }
         foreach (self::$irregular as $plur => $sing) {
-            if (0 === strcasecmp($word, $plur)) return $sing;
+            if (0 === strcasecmp($word, $plur)) {
+                return $sing;
+            }
         }
         foreach (self::$to_single as $regex => $pattern) {
-            if (preg_match($regex, $word)) return preg_replace($regex, $pattern, $word);
+            if (preg_match($regex, $word)) {
+                return preg_replace($regex, $pattern, $word);
+            }
         }
         return $word;
     }

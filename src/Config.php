@@ -8,6 +8,7 @@ use Angujo\DBReader\Models\ForeignKey;
 
 /**
  * Class Config
+ *
  * @package Angujo\Elocrud
  *
  * @method static string model_class($name = null);
@@ -25,25 +26,25 @@ use Angujo\DBReader\Models\ForeignKey;
  */
 class Config
 {
-    const CLASS_NAME = 'table';
-    const COLUMN_NAME = 'column';
+    const CLASS_NAME      = 'table';
+    const COLUMN_NAME     = 'column';
     const CONSTRAINT_NAME = 'constraint';
-    const AUTO = 'auto';
+    const AUTO            = 'auto';
 
     private static $_defaults = [
-        'relation_name' => self::AUTO,
-        'soft_delete_columns' => ['deleted_at'],
-        'create_columns' => ['created_at'],
-        'update_columns' => ['updated_at'],
-        'relation_remove_prx' => 'fk',
-        'relation_remove_sfx' => 'id',
+        'relation_name'           => self::AUTO,
+        'soft_delete_columns'     => ['deleted_at'],
+        'create_columns'          => ['created_at'],
+        'update_columns'          => ['updated_at'],
+        'relation_remove_prx'     => 'fk',
+        'relation_remove_sfx'     => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
-        'model_class' => \Illuminate\Database\Eloquent\Model::class,
-        'base_dir' => Helper::BASE_DIR,
-        'composite_keys' => true,
-        'base_abstract' => true,
-        'namespace' => 'App\Models',
-        'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean']
+        'model_class'             => \Illuminate\Database\Eloquent\Model::class,
+        'base_dir'                => Helper::BASE_DIR,
+        'composite_keys'          => true,
+        'base_abstract'           => true,
+        'namespace'               => 'App\Models',
+        'type_casts'              => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean'],
     ];
 
     public static function relationFunctionName(ForeignKey $foreignKey, $strictly = self::AUTO)
@@ -92,17 +93,29 @@ class Config
 
     public static function __callStatic($method, $args)
     {
-        if (!array_key_exists($method, self::$_defaults)) return null;
-        if (function_exists('config')) return config('elocrud.' . $method, self::$_defaults[$method]);
-        if (!empty($args)) self::$_defaults[$method] = array_shift($args);
+        if (!array_key_exists($method, self::$_defaults)) {
+            return null;
+        }
+        if (function_exists('config')) {
+            return config('elocrud.' . $method, self::$_defaults[$method]);
+        }
+        if (!empty($args)) {
+            self::$_defaults[$method] = array_shift($args);
+        }
         return self::$_defaults[$method];
     }
 
     public static function dir_path($path = null)
     {
-        if (null === $path) return self::$_defaults['base_dir'];
-        if (function_exists('config')) self::$_defaults['base_dir'] = config('elocrud.base_dir', self::$_defaults['base_dir']);
-        if ($path) self::$_defaults['base_dir'] = trim($path, "\\/");
+        if (null === $path) {
+            return self::$_defaults['base_dir'];
+        }
+        if (function_exists('config')) {
+            self::$_defaults['base_dir'] = config('elocrud.base_dir', self::$_defaults['base_dir']);
+        }
+        if ($path) {
+            self::$_defaults['base_dir'] = trim($path, "\\/");
+        }
         return self::$_defaults['base_dir'];
     }
 

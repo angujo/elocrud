@@ -10,9 +10,11 @@ class Helper
 
     /**
      * Replace a placeholder
+     *
      * @param $search
      * @param $replace
      * @param $content
+     *
      * @return string|string[]|null
      */
     public static function replacePlaceholder($search, $replace, $content)
@@ -25,6 +27,7 @@ class Helper
      * NOTE: Should be called after all replacements done.
      *
      * @param $content
+     *
      * @return string|string[]|null
      */
     public static function cleanPlaceholder($content)
@@ -34,7 +37,9 @@ class Helper
 
     /**
      * Convert to carmelCase
+     *
      * @param $name
+     *
      * @return mixed
      */
     public static function carmelCase($name)
@@ -49,7 +54,9 @@ class Helper
 
     /**
      * Get basename
+     *
      * @param $name
+     *
      * @return mixed
      */
     public static function baseName($name)
@@ -60,7 +67,9 @@ class Helper
 
     /**
      * Get corresponding classname equivalent
+     *
      * @param $name
+     *
      * @return string
      */
     public static function className($name)
@@ -70,18 +79,24 @@ class Helper
 
     /**
      * Streamline var_export to ensure arrays do not have the numbering indices
+     *
      * @param $value
+     *
      * @return mixed|string|string[]|null
      */
     public static function valueExport($value)
     {
-        if (is_array($value)) return preg_replace('/\s+/', ' ', preg_replace('/(([\d]+(\s+)?\=\>(\s+)?)|\s+)/i', ' ', var_export($value, true)));
+        if (is_array($value)) {
+            return preg_replace('/\s+/', ' ', preg_replace('/(([\d]+(\s+)?\=\>(\s+)?)|\s+)/i', ' ', var_export($value, true)));
+        }
         return var_export($value, true);
     }
 
     public static function makeDir($path)
     {
         $path = trim($path, "\\/");
-        if (!file_exists($path) && !is_dir($path)) mkdir($path, 0777, true);
+        if (!file_exists($path) && !is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
     }
 }

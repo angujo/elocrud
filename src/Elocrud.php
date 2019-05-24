@@ -32,8 +32,9 @@ class Elocrud
         Helper::makeDir(Config::base_abstract() ? Config::base_dir() : Config::dir_path());
         $this->modelsOutput(function (Model $model) {
             file_put_contents((Config::base_abstract() ? Config::base_dir() . '/Base' : Config::dir_path() . '/') . $model->fileName, (string)$model);
-            if (Config::base_abstract() && !file_exists(Config::dir_path() . '/' . $model->fileName))
+            if (Config::base_abstract() && !file_exists(Config::dir_path() . '/' . $model->fileName)) {
                 file_put_contents(Config::dir_path() . '/' . $model->fileName, (string)$model->workingClassText());
+            }
         });
     }
 
@@ -42,7 +43,7 @@ class Elocrud
         if (!Config::composite_keys()) {
             return;
         }
-        $path = Config::dir_path() . '\Extensions';
+        $path      = Config::dir_path() . '\Extensions';
         $namespace = Config::namespace() . '\\Extensions';
         Helper::makeDir($path);
         $content = file_get_contents(Helper::BASE_DIR . '/stubs/laravel-model.tmpl');
