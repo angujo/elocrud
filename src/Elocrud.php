@@ -29,16 +29,18 @@ class Elocrud
     public function writeModels()
     {
         $this->extendLaravelModel();
-        Helper::makeDir(Config::base_dir());
+        Helper::makeDir(Config::dir_path() . (Config::base_abstract() ? '/BaseTables' : ''));
         $this->modelsOutput(function (Model $model) {
-            file_put_contents(Config::base_dir() . '/' . $model->fileName, (string)$model);
+            file_put_contents((Config::base_abstract() ? Config::base_dir() . '/Base' : Config::dir_path() . '/') . $model->fileName, (string)$model);
+            if (Config::base_abstract() && !file_exists(Config::dir_path(). '/' . $model->fileName))
+                file_put_contents(Config::dir_path() . '/' . $model->fileName, (string)$model->workingClassText());
         });
     }
 
     public function extendLaravelModel()
     {
         if (!Config::composite_keys()) return;
-        $path = Config::base_dir() . '\Extensions';
+        $path = Config::dir_path() . '\Extensions';
         $namespace = Config::namespace() . '\\Extensions';
         Helper::makeDir($path);
         $content = file_get_contents(Helper::BASE_DIR . '/stubs/laravel-model.tmpl');

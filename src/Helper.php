@@ -65,7 +65,7 @@ class Helper
      */
     public static function className($name)
     {
-        return ucwords(self::carmelCase($name));
+        return Lang::toSingle(ucwords(self::carmelCase($name)));
     }
 
     /**
@@ -82,6 +82,6 @@ class Helper
     public static function makeDir($path)
     {
         $path = trim($path, "\\/");
-        if (!file_exists($path) && !is_dir($path)) mkdir($path,0777,true);
+        if (!file_exists($path) && !is_dir($path)) mkdir($path, 0777, true);
     }
 }

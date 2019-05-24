@@ -53,7 +53,7 @@ class Method
             $method->setOutputType(Helper::baseName(HasOne::class));
             $method->imports[] = HasOne::class;
             Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
-            // $method->imports[] = $method->getNamespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+            if (Config::base_abstract()) $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
         }
         if ($foreignKey->isOneToMany()) {
             $method->setOutput('$this->hasMany(' . Helper::className($foreignKey->foreign_table_name) . '::class, \'' . $foreignKey->foreign_column_name . '\',\'' . $foreignKey->column_name . '\');');
@@ -61,7 +61,7 @@ class Method
             $method->imports[] = Collection::class;
             $method->imports[] = HasMany::class;
             Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name) . '[]', Helper::toWords($foreignKey->name))->addType('Collection');
-            //$method->imports[] = $method->getNamespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
+            if (Config::base_abstract()) $method->imports[] = Config::namespace() . '\\' . Helper::className($foreignKey->foreign_table_name);
         }
         return $method;
     }

@@ -55,4 +55,5 @@ fabric.properties
 
 /composer.lock
 /vendor/
+/test/output-mysql/
 /test/output/

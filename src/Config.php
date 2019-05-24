@@ -16,6 +16,7 @@ use Angujo\DBReader\Models\ForeignKey;
  * @method static string relation_remove_sfx();
  * @method static string eloquent_extension_name();
  * @method static string namespace();
+ * @method static bool base_abstract();
  * @method static bool composite_keys();
  * @method static array soft_delete_columns();
  * @method static array create_columns();
@@ -40,6 +41,7 @@ class Config
         'model_class' => \Illuminate\Database\Eloquent\Model::class,
         'base_dir' => Helper::BASE_DIR,
         'composite_keys' => true,
+        'base_abstract' => true,
         'namespace' => 'App\Models',
         'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean']
     ];
@@ -55,7 +57,7 @@ class Config
                 $clsName = self::cleanClassName($foreignKey->name);
                 break;
             case self::COLUMN_NAME:
-                $clsName = self::cleanClassName($foreignKey->isOneToOne() && !$foreignKey->unique_colmn ? $foreignKey->column_name : $foreignKey->foreign_column_name);
+                $clsName = self::cleanClassName($foreignKey->isOneToOne() && !$foreignKey->unique_column ? $foreignKey->column_name : $foreignKey->foreign_column_name);
                 break;
             default:
                 $clsName = self::autoRelationNaming($foreignKey);
@@ -66,7 +68,7 @@ class Config
     protected static function autoRelationNaming(ForeignKey $foreignKey)
     {
         if ($foreignKey->isOneToOne()) {
-            if ($foreignKey->unique_colmn) {
+            if ($foreignKey->unique_column) {
                 return 0 === strcasecmp(self::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
                     Helper::className($foreignKey->foreign_table_name) :
                     self::cleanClassName($foreignKey->foreign_column_name);
@@ -76,6 +78,11 @@ class Config
 
         return 0 === strcasecmp(self::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
             Helper::className($foreignKey->foreign_table_name) : self::cleanClassName($foreignKey->foreign_column_name);
+    }
+
+    public static function base_namespace()
+    {
+        return self::namespace() . '\BaseTables';
     }
 
     protected static function cleanClassName($name)
@@ -91,11 +98,16 @@ class Config
         return self::$_defaults[$method];
     }
 
-    public static function base_dir($path = null)
+    public static function dir_path($path = null)
     {
         if (null === $path) return self::$_defaults['base_dir'];
         if (function_exists('config')) self::$_defaults['base_dir'] = config('elocrud.base_dir', self::$_defaults['base_dir']);
         if ($path) self::$_defaults['base_dir'] = trim($path, "\\/");
         return self::$_defaults['base_dir'];
+    }
+
+    public static function base_dir($path = null)
+    {
+        return self::dir_path($path) . '\BaseTables';
     }
 }

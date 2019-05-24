@@ -19,6 +19,7 @@ class Model
     private $extends;
 
     protected $className;
+    protected $abstractName;
     protected $namespace;
     protected $imports = [];
     protected $timestamps;
@@ -37,11 +38,12 @@ class Model
         $this->setExtension(Config::model_class());
         $this->table = $table;
         $this->content = file_get_contents(Helper::BASE_DIR . '/stubs/model-template.tmpl');
-        $this->className = Helper::carmelCase($this->table->name);
-        $this->namespace = Config::namespace();
+        $this->className = Helper::className($this->table->name);
+        $this->abstractName = 'Base' . Helper::className($this->table->name);
+        $this->namespace = Config::namespace() . (Config::base_abstract() ? '\BaseTables' : '');
         $this->fileName = $this->className . '.php';
         $this->timestamps = Property::attribute('protected', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
-        Property::attribute('protected', 'table', $table->name, 'Model Table')->setType('string');
+        Property::attribute('protected', 'table', $table->has_schema ? $table->query_name : $table->name, 'Model Table')->setType('string');
         $this->fillables = Property::attribute('protected', 'fillable', [], 'Mass assignable columns')->setType('array');
         $this->dates = Property::attribute('protected', 'dates', [], 'Date and Time Columns')->setType('array');
     }
@@ -142,15 +144,28 @@ class Model
     {
         $this->setColumns();
         $this->setForeignKeys();
+        if (Config::base_abstract()) $this->content = Helper::replacePlaceholder('abstract', 'abstract ', $this->content);
         $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function ($cls) { return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
         $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse " . implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))) . ';' : '', $this->content);
         $this->content = Helper::replacePlaceholder('constants', Property::getConstantText(), $this->content);
         $this->content = Helper::replacePlaceholder('properties', Property::getPhpDocText(), $this->content);
         $this->content = Helper::replacePlaceholder('extends', $this->extends, $this->content);
         $this->content = Helper::replacePlaceholder('attributes', Property::getAttributeText(), $this->content);
-        $this->content = Helper::replacePlaceholder('class', $this->className, $this->content);
+        $this->content = Helper::replacePlaceholder('class', Config::base_abstract() ? $this->abstractName : $this->className, $this->content);
         $this->content = Helper::replacePlaceholder('namespace', $this->namespace, $this->content);
         $this->content = Helper::replacePlaceholder('functions', Method::textFormat(), $this->content);
         return Helper::cleanPlaceholder($this->content);
+    }
+
+    public function workingClassText()
+    {
+        $content = file_get_contents(Helper::BASE_DIR . '/stubs/model2-template.tmpl');
+        $content = Helper::replacePlaceholder('class', $this->className, $content);
+        $content = Helper::replacePlaceholder('imports', 'use '.Config::base_namespace().'\\'.$this->abstractName.';', $content);
+        $content = Helper::replacePlaceholder('namespace', Config::namespace(), $content);
+        $content = Helper::replacePlaceholder('description', '* Working class to be used for customized extension of DB Base Tables', $content);
+        $content = Helper::replacePlaceholder('properties', '* Add properties here', $content);
+        $content = Helper::replacePlaceholder('extends', $this->abstractName, $content);
+        return Helper::cleanPlaceholder($content);
     }
 }
