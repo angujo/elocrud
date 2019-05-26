@@ -27,7 +27,7 @@ class Model
     protected $fillables;
     protected $casts;
     protected $dates;
-    protected $uses = [];
+    protected $uses    = [];
 
     public $fileName;
 
@@ -36,33 +36,33 @@ class Model
         Property::init();
         Method::init();
         $this->setExtension(Config::model_class());
-        $this->table        = $table;
-        $this->content      = file_get_contents(Helper::BASE_DIR.'/stubs/model-template.tmpl');
-        $this->className    = Helper::className($this->table->name);
-        $this->abstractName = 'Base'.Helper::className($this->table->name);
-        $this->namespace    = Config::namespace().(Config::base_abstract() ? '\BaseTables' : '');
-        $this->fileName     = $this->className.'.php';
-        $this->timestamps   = Property::attribute('protected', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
+        $this->table = $table;
+        $this->content = file_get_contents(Helper::BASE_DIR . '/stubs/model-template.tmpl');
+        $this->className = Helper::className($this->table->name);
+        $this->abstractName = 'Base' . Helper::className($this->table->name);
+        $this->namespace = Config::namespace() . (Config::base_abstract() ? '\BaseTables' : '');
+        $this->fileName = $this->className . '.php';
+        $this->timestamps = Property::attribute('protected', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
         Property::attribute('protected', 'table', $table->has_schema ? $table->query_name : $table->name, 'Model Table')->setType('string');
         $this->fillables = Property::attribute('protected', 'fillable', [], 'Mass assignable columns')->setType('array');
-        $this->dates     = Property::attribute('protected', 'dates', [], 'Date and Time Columns')->setType('array');
+        $this->dates = Property::attribute('protected', 'dates', [], 'Date and Time Columns')->setType('array');
     }
 
     private function setExtension($class)
     {
         $this->imports[] = $class;
-        $this->extends   = Helper::baseName($class);
+        $this->extends = Helper::baseName($class);
     }
 
     protected function setColumns()
     {
         $timeStamp = 0;
-        if ($this->table->primary_columns->count() > 0) {
+        if (count($this->table->primary_columns) > 0) {
             $pk = null;
-            if ($this->table->primary_columns->count() > 1) {
-                Property::attribute('protected', 'primaryKey', array_values($this->table->primary_columns->map(function (DBColumn $column) { return $column->name; })->all()), 'Primary Keys')->setType('array');
+            if (count($this->table->primary_columns) > 1) {
+                Property::attribute('protected', 'primaryKey', array_values(array_map(function (DBColumn $column) { return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
             } else {
-                $column = $this->table->primary_columns->first();
+                $column = array_values($this->table->primary_columns)[0];
                 if (0 !== strcasecmp('id', $column->name)) {
                     Property::attribute('protected', 'primaryKey', $column->name, 'Primary Key')->setType('string');
                 }
@@ -74,7 +74,7 @@ class Model
                 }
             }
         }
-        $this->table->columns->each(function (DBColumn $column) use (&$timeStamp) {
+        foreach ($this->table->columns as $column) {
             Property::fromColumn($column);
             if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) && $column->type->isDateTime) {
                 $timeStamp++;
@@ -86,16 +86,17 @@ class Model
             $this->setCast($column);
             $this->softDeletes($column);
             $this->dates($column);
-        });
+        }
         $this->timestamps->setValue(2 === $timeStamp);
     }
 
     protected function setForeignKeys()
     {
-        $this->table->foreign_keys_one_to_one->merge($this->table->foreign_keys_one_to_many)->each(function (ForeignKey $foreignKey) {
-            $method        = Method::fromForeignKey($foreignKey, $this->namespace);
+        $foreigns = array_merge($this->table->foreign_keys_one_to_one, $this->table->foreign_keys_one_to_many);
+        foreach ($foreigns as $foreignKey) {
+            $method = Method::fromForeignKey($foreignKey, $this->namespace);
             $this->imports = array_merge($this->imports, $method->getImports());
-        });
+        };
     }
 
     protected function dates(DBColumn $column)
@@ -112,7 +113,7 @@ class Model
         if (!in_array($column->name, Config::soft_delete_columns()) || !$column->type->isDateTime) {
             return;
         }
-        $this->uses[]    = SoftDeletes::class;
+        $this->uses[] = SoftDeletes::class;
         $this->imports[] = SoftDeletes::class;
     }
 
@@ -152,17 +153,17 @@ class Model
                     return null;
                 }
                 $dtype = preg_replace('/(\((.*?)?\))/', '', $ntype);
-                if (!$column->type->{'is'.ucfirst($dtype)}) {
+                if (!$column->type->{'is' . ucfirst($dtype)}) {
                     return null;
                 }
                 return 0 === strcasecmp($column->column_type, $ntype) ? $cast : null;
             } elseif (false !== stripos($type, '%')) {
                 $regex = $type;
                 if (0 === stripos($regex, '%')) {
-                    $regex = '^'.$regex;
+                    $regex = '^' . $regex;
                 }
                 if (0 === strcasecmp('%', substr($type, -1, 1))) {
-                    $regex = $regex.'$';
+                    $regex = $regex . '$';
                 }
                 $regex = str_ireplace('%', '(.*?)', preg_replace('/[%]+/', '%', $regex));
                 if (preg_match($regex, $column->name)) {
@@ -173,7 +174,7 @@ class Model
         return null;
     }
 
-    public function __toString()
+    public function toString()
     {
         $this->setColumns();
         $this->setForeignKeys();
@@ -181,7 +182,7 @@ class Model
             $this->content = Helper::replacePlaceholder('abstract', 'abstract ', $this->content);
         }
         $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function ($cls) { return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
-        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
+        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse " . implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))) . ';' : '', $this->content);
         $this->content = Helper::replacePlaceholder('constants', Property::getConstantText(), $this->content);
         $this->content = Helper::replacePlaceholder('properties', Property::getPhpDocText(), $this->content);
         $this->content = Helper::replacePlaceholder('extends', $this->extends, $this->content);
@@ -192,11 +193,16 @@ class Model
         return Helper::cleanPlaceholder($this->content);
     }
 
+    public function __toString()
+    {
+        return $this->toString();
+    }
+
     public function workingClassText()
     {
-        $content = file_get_contents(Helper::BASE_DIR.'/stubs/model2-template.tmpl');
+        $content = file_get_contents(Helper::BASE_DIR . '/stubs/model2-template.tmpl');
         $content = Helper::replacePlaceholder('class', $this->className, $content);
-        $content = Helper::replacePlaceholder('imports', 'use '.Config::base_namespace().'\\'.$this->abstractName.';', $content);
+        $content = Helper::replacePlaceholder('imports', 'use ' . Config::base_namespace() . '\\' . $this->abstractName . ';', $content);
         $content = Helper::replacePlaceholder('namespace', Config::namespace(), $content);
         $content = Helper::replacePlaceholder('description', '* Working class to be used for customized extension of DB Base Tables', $content);
         $content = Helper::replacePlaceholder('properties', '* Add properties here', $content);
