@@ -13,20 +13,20 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Method
 {
-    private $comment;
-    private $returns = true;
-    private $name;
-    private $run;
-    private $output;
-    private $output_type;
-    private $static = false;
-    private $access = 'public';
-    private static $me = [];
-    private static $def_name = '_default_';
+    private        $comment;
+    private        $returns    = true;
+    private        $name;
+    private        $run;
+    private        $output;
+    private        $output_type;
+    private        $static     = false;
+    private        $access     = 'public';
+    private static $me         = [];
+    private static $def_name   = '_default_';
     private static $c_name;
-    private $namespace;
-    private $imports = [];
-    private $properties = [];
+    private        $namespace;
+    private        $imports    = [];
+    private        $properties = [];
 
     protected function __construct($name, $fly = false)
     {

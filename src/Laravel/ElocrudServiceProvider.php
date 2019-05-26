@@ -21,7 +21,7 @@ class ElocrudServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/elocrud.php' => config_path('elocrud.php'),
+                __DIR__.'/elocrud.php' => config_path('elocrud.php'),
             ], 'elocrud-config');
             $this->commands([ConsoleCommands::class]);
         }
@@ -30,7 +30,7 @@ class ElocrudServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(Elocrud::class, function (Application $app) {
-            return new Elocrud($app->make('db'), $app->make('config')->get('elocrud'));
+            return new Elocrud($app->make('db'), $app->make('config')->get('elocrud', []));
         });
     }
 

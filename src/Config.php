@@ -20,6 +20,8 @@ use Angujo\DBReader\Models\ForeignKey;
  * @method static bool base_abstract();
  * @method static bool composite_keys();
  * @method static array soft_delete_columns();
+ * @method static array excluded_tables();
+ * @method static array only_tables();
  * @method static array create_columns();
  * @method static array update_columns();
  * @method static array type_casts();
@@ -32,19 +34,21 @@ class Config
     const AUTO            = 'auto';
 
     private static $_defaults = [
-        'relation_name'           => self::AUTO,
-        'soft_delete_columns'     => ['deleted_at'],
-        'create_columns'          => ['created_at'],
-        'update_columns'          => ['updated_at'],
-        'relation_remove_prx'     => 'fk',
-        'relation_remove_sfx'     => 'id',
+        'relation_name' => self::AUTO,
+        'soft_delete_columns' => ['deleted_at'],
+        'excluded_tables' => ['migrations'],
+        'only_tables' => [],
+        'create_columns' => ['created_at'],
+        'update_columns' => ['updated_at'],
+        'relation_remove_prx' => 'fk',
+        'relation_remove_sfx' => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
-        'model_class'             => \Illuminate\Database\Eloquent\Model::class,
-        'base_dir'                => Helper::BASE_DIR,
-        'composite_keys'          => true,
-        'base_abstract'           => true,
-        'namespace'               => 'App\Models',
-        'type_casts'              => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean'],
+        'model_class' => \Illuminate\Database\Eloquent\Model::class,
+        'base_dir' => Helper::BASE_DIR,
+        'composite_keys' => true,
+        'base_abstract' => true,
+        'namespace' => 'App\Models',
+        'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean'],
     ];
 
     public static function relationFunctionName(ForeignKey $foreignKey, $strictly = self::AUTO)
