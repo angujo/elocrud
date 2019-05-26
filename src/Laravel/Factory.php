@@ -9,9 +9,10 @@
 namespace Angujo\Elocrud\Laravel;
 
 
+use Angujo\DBReader\Drivers\Connection;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Elocrud;
-use Angujo\Elocrud\Models\Model;
+use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
 
@@ -49,11 +50,16 @@ class Factory
 
     public function setConnection(ConnectionInterface $connection, $driver)
     {
-        \Angujo\DBReader\Drivers\Connection::setPDO($connection->getPdo(), $driver);
+        Connection::setPDO($connection->getPdo(), $driver);
         $this->elocrud = new Elocrud();
     }
 
-    public function generate(\Closure $closure)
+    public function processCount()
+    {
+        return $this->elocrud->modelsCount();
+    }
+
+    public function generate(Closure $closure)
     {
         $this->elocrud->writeModels($closure);
     }

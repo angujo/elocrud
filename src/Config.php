@@ -102,9 +102,6 @@ class Config
         if (!array_key_exists($method, self::$_defaults)) {
             return null;
         }
-        if (function_exists('config')) {
-            return config('elocrud.'.$method, self::$_defaults[$method]);
-        }
         if (!empty($args)) {
             self::$_defaults[$method] = array_shift($args);
         }

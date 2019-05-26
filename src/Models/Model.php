@@ -6,7 +6,6 @@ namespace Angujo\Elocrud\Models;
 
 use Angujo\DBReader\Models\DBColumn;
 use Angujo\DBReader\Models\DBTable;
-use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Helper;
 use Carbon\Carbon;
@@ -14,7 +13,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Model
 {
-    private $table;
     private $content = '';
     private $extends;
 
@@ -27,9 +25,10 @@ class Model
     protected $dates;
     protected $uses    = [];
 
-    public $fileName;
-    public $className;
-    public $namespace;
+    private $table;
+    private $fileName;
+    private $className;
+    private $namespace;
 
     public function __construct(DBTable $table)
     {
@@ -208,5 +207,45 @@ class Model
         $content = Helper::replacePlaceholder('properties', '* Add properties here', $content);
         $content = Helper::replacePlaceholder('extends', $this->abstractName, $content);
         return Helper::cleanPlaceholder($content);
+    }
+
+    /**
+     * @return string
+     */
+    public function getAbstractName(): string
+    {
+        return $this->abstractName;
+    }
+
+    /**
+     * @return DBTable
+     */
+    public function getTable(): DBTable
+    {
+        return $this->table;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFileName(): string
+    {
+        return $this->fileName;
+    }
+
+    /**
+     * @return string
+     */
+    public function getClassName(): string
+    {
+        return $this->className;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNamespace(): string
+    {
+        return $this->namespace;
     }
 }

@@ -18,6 +18,11 @@ class Elocrud
         $this->database = !is_string($db_name) ? Connection::currentDatabase() : new Database($db_name);
     }
 
+    public function modelsCount()
+    {
+        return count(array_filter($this->database->tables, function (DBTable $table) { return $this->allowTable($table->name); }));
+    }
+
     public function modelsOutput(\Closure $closure)
     {
         // $closure(new Model(Database::getTable($this->database->name,'subscriptions')));
@@ -38,10 +43,10 @@ class Elocrud
         Helper::makeDir(Config::base_abstract() ? Config::base_dir() : Config::dir_path());
         $this->modelsOutput(function (Model $model) use ($closure) {
             if (Config::base_abstract() || (!Config::base_abstract() && Config::overwrite())) {
-                file_put_contents((Config::base_abstract() ? Config::base_dir().'/Base' : Config::dir_path().'/').$model->fileName, (string)$model->toString());
+                file_put_contents((Config::base_abstract() ? Config::base_dir().'/Base' : Config::dir_path().'/').$model->getFileName(), (string)$model->toString());
             }
-            if (Config::base_abstract() && (Config::overwrite() || !file_exists(Config::dir_path().'/'.$model->fileName))) {
-                file_put_contents(Config::dir_path().'/'.$model->fileName, (string)$model->workingClassText());
+            if (Config::base_abstract() && (Config::overwrite() || !file_exists(Config::dir_path().'/'.$model->getFileName()))) {
+                file_put_contents(Config::dir_path().'/'.$model->getFileName(), (string)$model->workingClassText());
             }
             if ($closure && is_callable($closure)) {
                 $closure($model);
