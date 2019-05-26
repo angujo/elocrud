@@ -9,37 +9,37 @@
 namespace Angujo\Elocrud\Laravel;
 
 
+use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Elocrud;
+use Angujo\Elocrud\Models\Model;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
 
 class Factory
 {
     private $db;
-    private $configs = [];
     /** @var Elocrud */
     private $elocrud;
-    private $schemas = [];
 
     public function __construct(DatabaseManager $db, array $configs = [])
     {
-        $this->db      = $db;
-        $this->configs = $configs;
+        $this->db = $db;
+        Config::import($configs);
     }
 
     public function exclude(array $table_names)
     {
-        $this->elocrud->setExcludeTables($table_names);
+        Config::excluded_tables(array_filter($table_names, 'is_string'));
     }
 
     public function only(array $tables)
     {
-        $this->elocrud->setOnlyTables($tables);
+        Config::only_tables(array_filter($tables, 'is_string'));
     }
 
     public function overwrite($force = false)
     {
-        $this->elocrud->setForce($force);
+        Config::overwrite($force);
     }
 
     public function switchDB($db_name)
@@ -47,14 +47,14 @@ class Factory
         $this->elocrud->setDbName($db_name);
     }
 
-    public function setConnection(ConnectionInterface $connection,$driver)
+    public function setConnection(ConnectionInterface $connection, $driver)
     {
-        \Angujo\DBReader\Drivers\Connection::setPDO($connection->getPdo(),$driver);
+        \Angujo\DBReader\Drivers\Connection::setPDO($connection->getPdo(), $driver);
         $this->elocrud = new Elocrud();
     }
 
-    public function generate()
+    public function generate(\Closure $closure)
     {
-
+        $this->elocrud->writeModels($closure);
     }
 }

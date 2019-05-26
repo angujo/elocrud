@@ -17,6 +17,7 @@ use Angujo\DBReader\Models\ForeignKey;
  * @method static string relation_remove_sfx();
  * @method static string eloquent_extension_name();
  * @method static string namespace();
+ * @method static bool overwrite();
  * @method static bool base_abstract();
  * @method static bool composite_keys();
  * @method static array soft_delete_columns();
@@ -33,7 +34,7 @@ class Config
     const CONSTRAINT_NAME = 'constraint';
     const AUTO            = 'auto';
 
-    private static $_defaults = [
+    protected static $_defaults = [
         'relation_name' => self::AUTO,
         'soft_delete_columns' => ['deleted_at'],
         'excluded_tables' => ['migrations'],
@@ -41,6 +42,7 @@ class Config
         'create_columns' => ['created_at'],
         'update_columns' => ['updated_at'],
         'relation_remove_prx' => 'fk',
+        'overwrite' => false,
         'relation_remove_sfx' => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
         'model_class' => \Illuminate\Database\Eloquent\Model::class,
@@ -126,5 +128,15 @@ class Config
     public static function base_dir($path = null)
     {
         return self::dir_path($path).'\BaseTables';
+    }
+
+    public static function import(array $configs)
+    {
+        self::$_defaults = array_merge(self::$_defaults, array_intersect_key($configs, self::$_defaults));
+    }
+
+    public static function all()
+    {
+        return self::$_defaults;
     }
 }

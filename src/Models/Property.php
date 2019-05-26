@@ -50,7 +50,7 @@ class Property
     /**
      * The default value of the property
      *
-     * @var string|int|float|boolean
+     * @var string|int|float|boolean|null
      */
     private $value;
 

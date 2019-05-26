@@ -11,9 +11,6 @@ use Angujo\Elocrud\Models\Model;
 
 class Elocrud
 {
-    private   $only_tables    = [];
-    private   $exclude_tables = [];
-    private   $force          = false;
     protected $database;
 
     public function __construct($db_name = null)
@@ -32,19 +29,27 @@ class Elocrud
         }
     }
 
-    public function writeModels()
+    /**
+     * @param null|\Closure $closure
+     */
+    public function writeModels($closure = null)
     {
         $this->extendLaravelModel();
         Helper::makeDir(Config::base_abstract() ? Config::base_dir() : Config::dir_path());
-        $this->modelsOutput(function (Model $model) {
-            file_put_contents((Config::base_abstract() ? Config::base_dir().'/Base' : Config::dir_path().'/').$model->fileName, (string)$model->toString());
-            if (Config::base_abstract() && (true === $this->force || !file_exists(Config::dir_path().'/'.$model->fileName))) {
+        $this->modelsOutput(function (Model $model) use ($closure) {
+            if (Config::base_abstract() || (!Config::base_abstract() && Config::overwrite())) {
+                file_put_contents((Config::base_abstract() ? Config::base_dir().'/Base' : Config::dir_path().'/').$model->fileName, (string)$model->toString());
+            }
+            if (Config::base_abstract() && (Config::overwrite() || !file_exists(Config::dir_path().'/'.$model->fileName))) {
                 file_put_contents(Config::dir_path().'/'.$model->fileName, (string)$model->workingClassText());
+            }
+            if ($closure && is_callable($closure)) {
+                $closure($model);
             }
         });
     }
 
-    public function extendLaravelModel()
+    protected function extendLaravelModel()
     {
         if (!Config::composite_keys()) {
             return;
@@ -63,27 +68,7 @@ class Elocrud
 
     protected function allowTable($name)
     {
-        return !in_array($name, $this->exclude_tables) && (empty($this->only_tables) || in_array($name, $this->only_tables));
-    }
-
-    /**
-     * @param array $only_tables
-     * @return Elocrud
-     */
-    public function setOnlyTables(array $only_tables): Elocrud
-    {
-        $this->only_tables = array_values(array_merge($this->only_tables, $only_tables, Config::only_tables()));;
-        return $this;
-    }
-
-    /**
-     * @param array $exclude_tables
-     * @return Elocrud
-     */
-    public function setExcludeTables(array $exclude_tables): Elocrud
-    {
-        $this->exclude_tables = array_values(array_merge($this->exclude_tables, $exclude_tables, Config::excluded_tables()));
-        return $this;
+        return !in_array($name, Config::excluded_tables()) && (empty(Config::only_tables()) || in_array($name, Config::only_tables()));
     }
 
     /**
@@ -93,16 +78,6 @@ class Elocrud
     public function setDbName($db_name)
     {
         $this->database = new Database($db_name);
-        return $this;
-    }
-
-    /**
-     * @param bool $force
-     * @return Elocrud
-     */
-    public function setForce(bool $force): Elocrud
-    {
-        $this->force = $force;
         return $this;
     }
 }

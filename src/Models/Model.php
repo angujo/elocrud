@@ -18,9 +18,7 @@ class Model
     private $content = '';
     private $extends;
 
-    protected $className;
     protected $abstractName;
-    protected $namespace;
     protected $imports = [];
     protected $timestamps;
     protected $attribs;
@@ -30,6 +28,8 @@ class Model
     protected $uses    = [];
 
     public $fileName;
+    public $className;
+    public $namespace;
 
     public function __construct(DBTable $table)
     {
