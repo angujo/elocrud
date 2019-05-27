@@ -50,7 +50,7 @@ class Config
         'composite_keys' => true,
         'base_abstract' => true,
         'namespace' => 'App\Models',
-        'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean'],
+        'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean', 'type:date' => 'date:Y-m-d', 'type:datetime' => 'datetime:Y-m-d H:i:s', 'type:timestamp' => 'datetime:Y-m-d H:i:s'],
     ];
 
     public static function relationFunctionName(ForeignKey $foreignKey, $strictly = self::AUTO)

@@ -41,10 +41,8 @@ class Model
         $this->abstractName = 'Base'.Helper::className($this->table->name);
         $this->namespace    = Config::namespace().(Config::base_abstract() ? '\BaseTables' : '');
         $this->fileName     = $this->className.'.php';
-        $this->timestamps   = Property::attribute('protected', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
         Property::attribute('protected', 'table', $table->has_schema ? $table->query_name : $table->name, 'Model Table')->setType('string');
         $this->fillables = Property::attribute('protected', 'fillable', [], 'Mass assignable columns')->setType('array');
-        $this->dates     = Property::attribute('protected', 'dates', [], 'Date and Time Columns')->setType('array');
     }
 
     private function setExtension($class)
@@ -55,7 +53,6 @@ class Model
 
     protected function setColumns()
     {
-        $timeStamp = 0;
         if (count($this->table->primary_columns) > 0) {
             $pk = null;
             if (count($this->table->primary_columns) > 1) {
@@ -73,6 +70,7 @@ class Model
                 }
             }
         }
+        $timeStamp = 0;
         foreach ($this->table->columns as $column) {
             Property::fromColumn($column);
             if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) && $column->type->isDateTime) {
@@ -86,7 +84,9 @@ class Model
             $this->softDeletes($column);
             $this->dates($column);
         }
-        $this->timestamps->setValue(2 === $timeStamp);
+        if (2 !== $timeStamp) {
+            Property::attribute('protected', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
+        }
     }
 
     protected function setForeignKeys()
@@ -102,6 +102,9 @@ class Model
     {
         if (!$column->type->isDateTime) {
             return;
+        }
+        if (!$this->dates) {
+            $this->dates = Property::attribute('protected', 'dates', [], 'Date and Time Columns')->setType('array');
         }
         $this->dates->addValue($column->name);
         $this->imports[] = Carbon::class;
@@ -124,16 +127,25 @@ class Model
         if (!$this->attribs) {
             $this->attribs = Property::attribute('protected', 'attributes', [], 'Default attribute values')->setType('array');
         }
-        $this->attribs->addValue($column->default, $column->name);
+        $this->attribs->addValue($this->compileDefaultValue($column), $column->name);
+    }
+
+    private function compileDefaultValue(DBColumn $column)
+    {
+        if ($column->type->isBool) {
+            return filter_var($column->default, FILTER_VALIDATE_BOOLEAN);
+        }
+        return $column->default;
     }
 
     protected function setCast(DBColumn $column)
     {
-        if (!$this->casts) {
+        $type = $this->typeCast($column);
+        if (!$this->casts && null !== $type) {
             $this->casts = Property::attribute('protected', 'casts', [], 'Casts')->setType('array');
         }
-        if (null !== ($v = $this->typeCast($column))) {
-            $this->casts->addValue($v, $column->name);
+        if (null !== $type) {
+            $this->casts->addValue($type, $column->name);
         }
     }
 
@@ -146,16 +158,17 @@ class Model
 
     protected function typeCast(DBColumn $column)
     {
-        foreach (Config::type_casts() as $type => $cast) {
+        $casts=Config::type_casts();
+        foreach ($casts as $type => $cast) {
             if (0 === stripos($type, 'type:')) {
-                if (!($ntype = preg_replace('/type:/i', '', $type))) {
+                if (!($ntype = preg_replace('/^(type:)/i', '', $type))) {
                     return null;
                 }
                 $dtype = preg_replace('/(\((.*?)?\))/', '', $ntype);
-                if (!$column->type->{'is'.ucfirst($dtype)}) {
-                    return null;
+                if ($column->type->{'is'.ucfirst($dtype)}) {
+                    return $cast;
                 }
-                return 0 === strcasecmp($column->column_type, $ntype) ? $cast : null;
+                // if(0 === strcasecmp($column->column_type, $ntype)) return $cast ;
             } elseif (false !== stripos($type, '%')) {
                 $regex = $type;
                 if (0 === stripos($regex, '%')) {
@@ -165,7 +178,7 @@ class Model
                     $regex = $regex.'$';
                 }
                 $regex = str_ireplace('%', '(.*?)', preg_replace('/[%]+/', '%', $regex));
-                if (preg_match($regex, $column->name)) {
+                if (preg_match("/{$regex}/i", $column->name)) {
                     return $cast;
                 }
             }

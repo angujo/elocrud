@@ -4,6 +4,8 @@
 namespace Angujo\Elocrud;
 
 
+use Doctrine\Common\Inflector\Inflector;
+
 class Helper
 {
     const BASE_DIR = __DIR__;
@@ -74,7 +76,7 @@ class Helper
      */
     public static function className($name)
     {
-        return Lang::toSingle(ucwords(self::carmelCase($name)));
+        return Inflector::classify(Inflector::singularize($name));// Inflector::classify($name);// Lang::toSingle(ucwords(self::carmelCase($name)));
     }
 
     /**

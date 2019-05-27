@@ -81,9 +81,9 @@ return [
     'namespace' => 'App\Models',
     /*
      * Type Casting for properties and database values.
-     * You can cast using a column name of data type.
+     * You can cast using a column name or data type.
      * To cast data type e.g. tinyint(1) to be boolean,
      * start with "type:" followed by the type i.e. "type:tinyint(1)"=>'boolean'
      */
-    'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean'],
+    'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean','type:date'=>'date:Y-m-d','type:datetime'=>'datetime:Y-m-d H:i:s'],
 ];

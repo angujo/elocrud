@@ -74,7 +74,7 @@ class Property
     {
         self::constant(strtoupper($column->name), $column->name)->setComment('Column name: '.$column->name);
         //echo '<pre>';var_dump($column->type->isPhpinteger,$column->type->isInt,$column->data_type);
-        $prop = self::phpdocProperty($column->name, $column->type->phpName(), Helper::toWords($column->name));
+        $prop = self::phpdocProperty($column->name, $column->type->phpName(), is_array($column->data_type)?implode(',',$column->data_type):$column->data_type);
         if ($column->is_nullable && !$column->is_primary && !$column->is_auto_increment) {
             $prop->addType('NULL');
         }

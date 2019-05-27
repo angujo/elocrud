@@ -12,12 +12,13 @@ namespace Angujo\Elocrud\Laravel;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Models\Model;
 use Illuminate\Console\Command;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
 
 class ConsoleCommands extends Command
 {
     protected $signature   = 'elocrud:models 
-                            {--c|connection=mysql : The connection to use}
+                            {--c|connection= : The connection to use}
                             {--d|database= : The database and its schemas to run}
                             {--e|exclude=* : Excluded tables}
                             {--f|force : Force overwriting models}
@@ -34,7 +35,8 @@ class ConsoleCommands extends Command
     public function handle()
     {
         try {
-            $this->elocrud->setConnection(DB::connection($this->option('connection')), config('database.connections.'.$this->option('connection').'.driver'));
+            /** @var $connection Connection */
+            $this->elocrud->setConnection($connection = DB::connection($this->option('connection') ?: null), $connection->getDriverName());
             if ($db = $this->option('database')) {
                 $this->elocrud->switchDB($db);
             }

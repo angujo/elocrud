@@ -25,7 +25,6 @@ class Elocrud
 
     public function modelsOutput(\Closure $closure)
     {
-        // $closure(new Model(Database::getTable($this->database->name,'subscriptions')));
         foreach ($this->database->tables as $table) {
             if (!$this->allowTable($table->name)) {
                 continue;
