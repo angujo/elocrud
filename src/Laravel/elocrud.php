@@ -96,7 +96,7 @@ return [
      * This is the nested namespace from the "base_dir" above
      * to be used for pivot tables
      */
-    'pivot_extension_name'    => 'Pivot',
+    'pivot_extension_name'    => 'Pivots',
     /*
      * @link https://laravel.com/docs/5.6/eloquent-relationships#polymorphic-relations
      * Add polymorphic tables as well.
