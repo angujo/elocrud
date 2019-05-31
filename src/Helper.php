@@ -46,7 +46,7 @@ class Helper
      */
     public static function carmelCase($name)
     {
-        return str_ireplace('_', '', preg_replace_callback('/(^|_)([a-z])/i', function ($m) { return strtoupper($m[0]); }, $name));
+        return str_ireplace('_', '', preg_replace_callback('/(^|_)([a-z])/i', function($m){ return strtoupper($m[0]); }, $name));
     }
 
     public static function toWords($content)
@@ -100,5 +100,31 @@ class Helper
         if (!file_exists($path) && !is_dir($path)) {
             mkdir($path, 0777, true);
         }
+    }
+
+    public static function isMorphId($name)
+    {
+        return 0 === strcasecmp('_id', substr($name, -3));
+    }
+
+    public static function isMorphType($name)
+    {
+        return 0 === strcasecmp('_type', substr($name, -5));
+    }
+
+    /**
+     * @param $name
+     *
+     * @return string|null
+     */
+    public static function morphName($name)
+    {
+        if (self::isMorphId($name)) {
+            return preg_replace('/(_id)$/i', '', $name);
+        }
+        if (self::isMorphType($name)) {
+            return preg_replace('/(_type)$/i', '', $name);
+        }
+        return null;
     }
 }
