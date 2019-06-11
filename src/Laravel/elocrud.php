@@ -98,12 +98,21 @@ return [
      */
     'pivot_extension_name'    => 'Pivots',
     /*
-     * @link https://laravel.com/docs/5.6/eloquent-relationships#polymorphic-relations
+     * @link https://laravel.com/docs/eloquent-relationships#polymorphic-relations
      * Add polymorphic tables as well.
      * To set this up column naming should be as described in laravel
-     * On the "_type" list all tables to be referenced on the column's comments
-     * While on the "_id" list corresponding column's comments (optional)
-     * if the "_id" column lacks a comment, primaryKey of the table will be assumed
+     * On the "_type" list all tables to be referenced on the column's comments (Optional)
+     * The primaryKey of the referenced table will be considered by default, otherwise,
+     * the column name should be indicated if different from primaryKey
+     * If the morph is one to one, a numeric indicator should be added i.e. 1-1=One to One, 1-0=One to Many, with One to Many being the default
+     *
+     * Syntax 1: table_name1,table_name2,.... table_nameN -- primary column used and one to many assumed
+     * Syntax 2: table_name1:column_name1,table_name2:column_name2,... table_nameN:column_nameN -- primary column not used but one to many assumed
+     * Syntax 3: table_name1:1-1,table_name2:1,... table_nameN:1-1, -- One to One reference with primaryKey used
+     * Syntax 4: table_name1:column_name1:1-1,table_name2:column_name2:1-1,... table_nameN:column_nameN:1-1 -- primary column not used and one to one used
+     * Syntax 5: table_name1:column_name1:0-0,table_name2:column_name2:0-0,... table_nameN:column_nameN:0-0 -- primary column not used and many to many used (Not ready for production)
+     *
+     * ONLY POSSIBLE FOR NON-COMPOSITE PRI-KEYs
      * All listing should be separated by a comma
      */
     'polymorph'               => true,
