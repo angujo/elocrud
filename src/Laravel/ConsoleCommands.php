@@ -17,14 +17,17 @@ use Illuminate\Support\Facades\DB;
 
 class ConsoleCommands extends Command
 {
-    protected $signature   = 'elocrud:models 
+    protected $signature = 'elocrud:models 
                             {--c|connection= : The connection to use}
                             {--d|database= : The database and its schemas to run}
                             {--e|exclude=* : Excluded tables}
                             {--f|force : Force overwriting models}
                             {tables?* : The list of tables to work on}';
     protected $description = 'Parse database schema tables into models';
-    private   $elocrud;
+    /**
+     * @var Factory
+     */
+    private $elocrud;
 
     public function __construct(Factory $factory)
     {
@@ -53,7 +56,7 @@ class ConsoleCommands extends Command
             $this->output->progressStart($this->elocrud->processCount());
             $bar = $this->output->createProgressBar($this->elocrud->processCount());
             $bar->setFormat("%current%/%max% [%bar%] %percent:3s%%\n  %estimated:-6s%  %memory:6s%\n");
-            $this->elocrud->generate(function (Model $model) use (&$entries, $bar) {
+            $this->elocrud->generate(function(Model $model) use (&$entries, $bar){
                 $entries[] = [$model->getTable()->name, Config::namespace().'\\'.$model->getClassName(), '\\'.$model->getAbstractName(), date('H:i:sT')];
                 $bar->clear();
                 $this->info('Processed '.$model->getTable()->name);

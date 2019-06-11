@@ -7,6 +7,7 @@ namespace Angujo\Elocrud;
 use Angujo\DBReader\Drivers\Connection;
 use Angujo\DBReader\Models\Database;
 use Angujo\DBReader\Models\DBTable;
+use Angujo\DBReader\Models\Schema;
 use Angujo\Elocrud\Models\Model;
 
 class Elocrud
@@ -20,7 +21,14 @@ class Elocrud
 
     public function modelsCount()
     {
-        return count(array_filter($this->database->tables, function (DBTable $table) { return $this->allowTable($table->name); }));
+        return array_sum(array_map(function(Schema $schema){ return count($schema->tables); }, $this->database->schemas));
+    }
+
+    public function schemaOutput(Schema $schema,\Closure $closure)
+    {
+        foreach ($schema->tables as $table) {
+
+        }
     }
 
     public function modelsOutput(\Closure $closure)
@@ -40,7 +48,7 @@ class Elocrud
     {
         $this->extendLaravelModel();
         Helper::makeDir(Config::base_abstract() ? Config::base_dir() : Config::dir_path());
-        $this->modelsOutput(function (Model $model) use ($closure) {
+        $this->modelsOutput(function(Model $model) use ($closure){
             if (Config::base_abstract() || (!Config::base_abstract() && Config::overwrite())) {
                 file_put_contents((Config::base_abstract() ? Config::base_dir().'/Base' : Config::dir_path().'/').$model->getFileName(), (string)$model->toString());
             }
@@ -77,6 +85,7 @@ class Elocrud
 
     /**
      * @param mixed $db_name
+     *
      * @return Elocrud
      */
     public function setDbName($db_name)
