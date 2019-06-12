@@ -12,6 +12,9 @@
  * Accessible models will be directly placed on "base_dir"
  * Any subsequent extension or supporting directories will be set deeper into "base_dir"
  */
+
+use Illuminate\Database\Eloquent\Model;
+
 return [
     /*
      * Column names that are used for soft delete.
@@ -64,7 +67,7 @@ return [
      * Class to be used for each and every generated model
      * Ensure it is or extends \Illuminate\Database\Eloquent\Model::class
      */
-    'model_class'             => \Illuminate\Database\Eloquent\Model::class,
+    'model_class'             => Model::class,
     /*
      * Directory path to put the models
      */
