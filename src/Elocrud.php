@@ -9,6 +9,7 @@ use Angujo\DBReader\Models\Database;
 use Angujo\DBReader\Models\DBTable;
 use Angujo\DBReader\Models\Schema;
 use Angujo\Elocrud\Models\Model;
+use Angujo\Elocrud\Models\Morpher;
 
 class Elocrud
 {
@@ -21,13 +22,13 @@ class Elocrud
 
     public function modelsCount()
     {
-        return array_sum(array_map(function(Schema $schema){ return count($schema->tables); }, $this->database->schemas));
+        return array_sum(array_map(function (Schema $schema) { return count($schema->tables); }, $this->database->schemas));
     }
 
-    public function schemaOutput(Schema $schema,\Closure $closure)
+    public function schemaOutput(Schema $schema, \Closure $closure)
     {
         foreach ($schema->tables as $table) {
-
+            Morpher::fromTable($table);
         }
     }
 
@@ -48,7 +49,7 @@ class Elocrud
     {
         $this->extendLaravelModel();
         Helper::makeDir(Config::base_abstract() ? Config::base_dir() : Config::dir_path());
-        $this->modelsOutput(function(Model $model) use ($closure){
+        $this->modelsOutput(function (Model $model) use ($closure) {
             if (Config::base_abstract() || (!Config::base_abstract() && Config::overwrite())) {
                 file_put_contents((Config::base_abstract() ? Config::base_dir().'/Base' : Config::dir_path().'/').$model->getFileName(), (string)$model->toString());
             }
