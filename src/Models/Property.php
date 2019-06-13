@@ -161,7 +161,7 @@ class Property
             if (!$property->getName()) {
                 continue;
             }
-            $content  = 0 === strcasecmp('@property', $property->getPrefix()) ? ' * ${prefix} ${type} $${name} ${comments};' : ' * ${prefix} ${type} ${name}(${params}) ${comments}';
+            $content  = 0 === strcasecmp('@property', $property->getPrefix()) ? ' * ${prefix} ${type} $${name} ${comments}' : ' * ${prefix} ${type} ${name}(${params}) ${comments}';
             $content  = str_ireplace('${prefix}', $property->getPrefix(), $content);
             $content  = str_ireplace('${comments}', $property->getComment(), $content);
             $content  = str_ireplace('${name}', $property->getName(), $content);

@@ -115,6 +115,9 @@ return [
      * Syntax 4: table_name1:column_name1:1-1,table_name2:column_name2:1-1,... table_nameN:column_nameN:1-1 -- primary column not used and one to one used
      * Syntax 5: table_name1:column_name1:0-0,table_name2:column_name2:0-0,... table_nameN:column_nameN:0-0 -- primary column not used and many to many used (Not ready for production)
      *
+     * In addition to above, you can add schema/database name, enclosed in a bracket, to the table name i.e. (db_name)table_name1,...
+     * This is in case the referenced table belongs to a different schema
+     *
      * ONLY POSSIBLE FOR NON-COMPOSITE PRI-KEYs
      * All listing should be separated by a comma
      */

@@ -23,7 +23,7 @@ class Model
     protected $fillables;
     protected $casts;
     protected $dates;
-    protected $uses    = [];
+    protected $uses = [];
 
     private $table;
     private $fileName;
@@ -56,7 +56,7 @@ class Model
         if (count($this->table->primary_columns) > 0) {
             $pk = null;
             if (count($this->table->primary_columns) > 1) {
-                Property::attribute('protected', 'primaryKey', array_values(array_map(function (DBColumn $column) { return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
+                Property::attribute('protected', 'primaryKey', array_values(array_map(function(DBColumn $column){ return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
             } else {
                 $column = array_values($this->table->primary_columns)[0];
                 if (0 !== strcasecmp('id', $column->name)) {
@@ -91,8 +91,7 @@ class Model
 
     protected function setForeignKeys()
     {
-        $foreigns = array_merge($this->table->foreign_keys_one_to_one, $this->table->foreign_keys_one_to_many);
-        foreach ($foreigns as $foreignKey) {
+        foreach ($this->table->foreign_keys as $foreignKey) {
             $method        = Method::fromForeignKey($foreignKey, $this->namespace);
             $this->imports = array_merge($this->imports, $method->getImports());
         };
@@ -156,9 +155,27 @@ class Model
         }
     }
 
+    protected function setMorphedTo()
+    {
+        $morphs = Morpher::getTableMorphs($this->table->name, $this->table->schema_name);
+        foreach ($morphs as $morph) {
+            $method        = Method::fromMorph($morph);
+            $this->imports = array_merge($this->imports, $method->getImports());
+        }
+    }
+
+    protected function setMorphedReference()
+    {
+        $morphItems = Morpher::getMorphItems($this->table);
+        foreach ($morphItems as $morphItem) {
+            $method        = Method::fromMorphItem($morphItem);
+            $this->imports = array_merge($this->imports, $method->getImports());
+        }
+    }
+
     protected function typeCast(DBColumn $column)
     {
-        $casts=Config::type_casts();
+        $casts = Config::type_casts();
         foreach ($casts as $type => $cast) {
             if (0 === stripos($type, 'type:')) {
                 if (!($ntype = preg_replace('/^(type:)/i', '', $type))) {
@@ -190,11 +207,13 @@ class Model
     {
         $this->setColumns();
         $this->setForeignKeys();
+        $this->setMorphedTo();
+        $this->setMorphedReference();
         if (Config::base_abstract()) {
             $this->content = Helper::replacePlaceholder('abstract', 'abstract ', $this->content);
         }
-        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function ($cls) { return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
-        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
+        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function($cls){ return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
+        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function($cls){ return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
         $this->content = Helper::replacePlaceholder('constants', Property::getConstantText(), $this->content);
         $this->content = Helper::replacePlaceholder('properties', Property::getPhpDocText(), $this->content);
         $this->content = Helper::replacePlaceholder('extends', $this->extends, $this->content);

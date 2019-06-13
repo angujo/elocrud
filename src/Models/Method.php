@@ -7,26 +7,30 @@ namespace Angujo\Elocrud\Models;
 use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Helper;
+use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Method
 {
-    private        $comment;
-    private        $returns    = true;
-    private        $name;
-    private        $run;
-    private        $output;
-    private        $output_type;
-    private        $static     = false;
-    private        $access     = 'public';
-    private static $me         = [];
-    private static $def_name   = '_default_';
+    private $comment;
+    private $returns = true;
+    private $name;
+    private $run;
+    private $output;
+    private $output_type;
+    private $static = false;
+    private $access = 'public';
+    private static $me = [];
+    private static $def_name = '_default_';
     private static $c_name;
-    private        $namespace;
-    private        $imports    = [];
-    private        $properties = [];
+    private $namespace;
+    private $imports = [];
+    private $properties = [];
 
     protected function __construct($name, $fly = false)
     {
@@ -44,6 +48,46 @@ class Method
         }
         self::$c_name            = null !== $name ? $name : self::$def_name;
         self::$me[self::$c_name] = [];
+    }
+
+    public static function fromMorph(Morph $morph)
+    {
+        $method = new self($morph->getName());
+        $method->setReturns(true);
+        $method->setOutputType(Helper::baseName(MorphTo::class));
+        $method->setOutput('$this->morphTo();');
+        $method->imports[] = MorphTo::class;
+        $prop              = Property::phpdocProperty($morph->getName())->addType('NULL');
+        foreach ($morph->getItems() as $item) {
+            $method->imports[] = Config::namespace().'\\'.Helper::className($item->getTableName());
+            $prop->addType(Helper::className($item->getTableName()));
+        }
+        return $method;
+    }
+
+    public static function fromMorphItem(MorphItem $morphItem)
+    {
+        $method            = new self($prop_name = $morphItem->isOneToOneRelation() ? Inflector::singularize($morphItem->getMorph()->getName()) : Inflector::pluralize($morphItem->getMorph()->getName()));
+        $method->imports[] = Config::namespace().'\\'.Helper::className($morphItem->getMorph()->getTableName());
+        if ($morphItem->isOneToOneRelation()) {
+            Property::phpdocProperty($prop_name, Helper::className($morphItem->getMorph()->getTableName()))->addType('NULL');
+            $method->imports[] = MorphOne::class;
+            $method->setOutputType(Helper::baseName(MorphOne::class));
+            $method->setOutput('$this->morphOne('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
+        } elseif ($morphItem->isManyToManyRelation()) {
+            Property::phpdocProperty($prop_name, Helper::className($morphItem->getMorph()->getTableName()).'[]')->addType(Helper::baseName(Collection::class));
+            $method->imports[] = MorphMany::class;
+            $method->imports[] = Collection::class;
+            $method->setOutputType(Helper::baseName(MorphMany::class));
+            $method->setOutput('$this->morphMany('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
+        } else {
+            Property::phpdocProperty($prop_name, Helper::className($morphItem->getMorph()->getTableName()).'[]')->addType(Helper::baseName(Collection::class));
+            $method->imports[] = MorphMany::class;
+            $method->imports[] = Collection::class;
+            $method->setOutputType(Helper::baseName(MorphMany::class));
+            $method->setOutput('$this->morphMany('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
+        }
+        return $method;
     }
 
     public static function fromForeignKey(ForeignKey $foreignKey, $namespace, $return = false)

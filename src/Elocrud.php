@@ -22,23 +22,24 @@ class Elocrud
 
     public function modelsCount()
     {
-        return array_sum(array_map(function (Schema $schema) { return count($schema->tables); }, $this->database->schemas));
-    }
-
-    public function schemaOutput(Schema $schema, \Closure $closure)
-    {
-        foreach ($schema->tables as $table) {
-            Morpher::fromTable($table);
-        }
+        return array_sum(array_map(function(Schema $schema){ return count($schema->tables); }, $this->database->schemas));
     }
 
     public function modelsOutput(\Closure $closure)
     {
-        foreach ($this->database->tables as $table) {
-            if (!$this->allowTable($table->name)) {
-                continue;
+        foreach ($this->database->schemas as $schema) {
+            foreach ($schema->tables as $table) {
+                if (!$this->allowTable($table->name)) {
+                    continue;
+                }
+                Morpher::fromTable($table);
             }
-            $closure(new Model($table));
+            foreach ($schema->tables as $table) {
+                if (!$this->allowTable($table->name)) {
+                    continue;
+                }
+                $closure(new Model($table));
+            }
         }
     }
 
@@ -49,7 +50,7 @@ class Elocrud
     {
         $this->extendLaravelModel();
         Helper::makeDir(Config::base_abstract() ? Config::base_dir() : Config::dir_path());
-        $this->modelsOutput(function (Model $model) use ($closure) {
+        $this->modelsOutput(function(Model $model) use ($closure){
             if (Config::base_abstract() || (!Config::base_abstract() && Config::overwrite())) {
                 file_put_contents((Config::base_abstract() ? Config::base_dir().'/Base' : Config::dir_path().'/').$model->getFileName(), (string)$model->toString());
             }

@@ -5,6 +5,7 @@ namespace Angujo\Elocrud\Models;
 
 
 use Angujo\DBReader\Models\DBColumn;
+use Angujo\DBReader\Models\Schema;
 use Angujo\Elocrud\Helper;
 
 class Morph
@@ -13,23 +14,32 @@ class Morph
     private $id;
     private $type;
     private $table_name;
-    /**
-     * @var MorphItem[]
-     */
-    private $items = [];
+    private $schema_name;
 
-    public function __construct(DBColumn $column)
+    protected function __construct(DBColumn $column)
     {
-        $this->name       = Helper::morphName($column->name);
-        $this->table_name = $column->table_name;
-        $this->id         = $this->name.'_id';
-        $this->type       = $this->name.'_type';
+        $this->name        = Helper::morphName($column->name);
+        $this->table_name  = $column->table_name;
+        $this->schema_name = $column->schema_name;
+        $this->id          = $this->name.'_id';
+        $this->type        = $this->name.'_type';
         if (is_string($column->comment)) {
-            $this->items = array_filter(
-                array_map(function($entr) use ($column){
-                    return MorphItem::commentDefinition($column->schema_name, array_filter(explode(':', $entr), 'trim'));
-                }, array_filter(explode(',', $column->comment), 'trim')));
+            $entries = array_filter(array_map('trim', explode(',', $column->comment)));
+            foreach ($entries as $comment) {
+                if (!preg_match("/^(\((.*?)\))/i", $comment)) {
+                    $comment = "({$column->schema_name})$comment";
+                }
+                if (!($item = MorphItem::commentDefinition($this, array_filter(explode(':', $comment), 'trim'), $column->name))) {
+                    continue;
+                }
+                Morpher::setMorphItem($item);
+            }
         }
+    }
+
+    public static function fromColumn(DBColumn $column)
+    {
+        return new self($column);
     }
 
     /**
@@ -61,7 +71,7 @@ class Morph
      */
     public function getItems(): array
     {
-        return $this->items;
+        return array_filter(Morpher::getMorphItems(), function(MorphItem $morphItem){ return $morphItem->getMorph() == $this; });
     }
 
     /**
@@ -70,6 +80,11 @@ class Morph
     public function getTableName(): string
     {
         return $this->table_name;
+    }
+
+    public function tableReference()
+    {
+        return $this->schema_name.'.'.$this->table_name;
     }
 
 }

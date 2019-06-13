@@ -8,6 +8,7 @@ use Angujo\DBReader\Drivers\Connection;
 use Angujo\DBReader\Models\Database;
 use Angujo\DBReader\Models\DBColumn;
 use Angujo\DBReader\Models\DBTable;
+use Angujo\DBReader\Models\Schema;
 use Angujo\Elocrud\Helper;
 
 class Morpher
@@ -16,6 +17,10 @@ class Morpher
      * @var Morph[]
      */
     private static $morphs = [];
+    /**
+     * @var MorphItem[]
+     */
+    private static $morph_items = [];
 
     protected function __construct()
     {
@@ -32,7 +37,7 @@ class Morpher
             if (count($tmp[$table->name][$name]) === 2) {
                 foreach ($tmp[$table->name][$name] as $col_name) {
                     if (Helper::isMorphType($col_name)) {
-                        self::$morphs[$table->schema_name.'.'.$table->name] = new Morph($table->getColumn($col_name));
+                        self::$morphs[$table->schema_name.'.'.$table->name] = Morph::fromColumn($table->getColumn($col_name));
                         break;
                     }
                 }
@@ -46,10 +51,10 @@ class Morpher
         if (!is_string($schema_name)) {
             $schema_name = Connection::currentDatabase(true);
         }
-        if (!($table = Database::getTable($schema_name, $table_name)) || !($column = $table->getColumn($name))) {
+        if (!($table = Schema::getTable($schema_name, $table_name)) || !($column = $table->getColumn($name))) {
             return;
         }
-        self::$morphs[$schema_name.'.'.$table_name][$name] = new Morph($column);
+        self::$morphs[$schema_name.'.'.$table_name][$name] = Morph::fromColumn($column);
     }
 
     /**
@@ -70,21 +75,30 @@ class Morpher
     }
 
     /**
+     * @param DBTable $table
      *
-     * @param string      $table_name
-     * @param string|null $schema_name
-     *
-     * @return Morph[]
+     * @return MorphItem[]
      */
-    public static function getTableMorphsReference($table_name, $schema_name = null)
+    public static function getMorphItems(DBTable $table = null): array
     {
-        if (!$schema_name) {
-            $schema_name = Connection::currentDatabase(true);
+        if ($table) {
+            return array_filter(self::$morph_items, function(MorphItem $morphItem) use ($table){ return 0 === strcasecmp($table->schema_naming, $morphItem->tableReference()); });
         }
-        return array_filter(self::$morphs, function(Morph $morph) use ($schema_name, $table_name){
-            return count(array_filter($morph->getItems(), function(MorphItem $morphItem) use ($schema_name, $table_name){
-                return 0 === strcasecmp($morphItem->getSchemaName().'.'.$morphItem->getTableName(), $schema_name.'.'.$table_name);
-            })) ? $morph : null;
-        });
+        return self::$morph_items;
     }
+
+    public static function setMorphItem(MorphItem $morphItem)
+    {
+        self::$morph_items[] = $morphItem;
+    }
+
+    /**
+     * @param MorphItem[] $morph_items
+     */
+    public static function setMorphItems(array $morph_items): void
+    {
+        self::$morph_items = $morph_items;
+    }
+
+
 }
