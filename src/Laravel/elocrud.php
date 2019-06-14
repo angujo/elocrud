@@ -107,13 +107,17 @@ return [
      * On the "_type" list all tables to be referenced on the column's comments (Optional)
      * The primaryKey of the referenced table will be considered by default, otherwise,
      * the column name should be indicated if different from primaryKey
-     * If the morph is one to one, a numeric indicator should be added i.e. 1-1=One to One, 1-0=One to Many, with One to Many being the default
+     * If the morph is not one to many, an indicator should be added i.e. 1-1=One to One, 1-0=One to Many, 0-0=Many to Many, with One to Many being the default
      *
      * Syntax 1: table_name1,table_name2,.... table_nameN -- primary column used and one to many assumed
      * Syntax 2: table_name1:column_name1,table_name2:column_name2,... table_nameN:column_nameN -- primary column not used but one to many assumed
      * Syntax 3: table_name1:1-1,table_name2:1,... table_nameN:1-1, -- One to One reference with primaryKey used
      * Syntax 4: table_name1:column_name1:1-1,table_name2:column_name2:1-1,... table_nameN:column_nameN:1-1 -- primary column not used and one to one used
-     * Syntax 5: table_name1:column_name1:0-0,table_name2:column_name2:0-0,... table_nameN:column_nameN:0-0 -- primary column not used and many to many used (Not ready for production)
+     * Syntax 5: table_name1:column_name1:0-0,table_name2:column_name2:0-0,... table_nameN:column_nameN:0-0 -- primary column not used and many to many used
+     *
+     * For Many to Many Polymorph,
+     * The "_id" column's comment should contain third table's reference.
+     * Otherwise, the table should have three columns where the third will be assumed as the end point table.
      *
      * In addition to above, you can add schema/database name, enclosed in a bracket, to the table name i.e. (db_name)table_name1,...
      * This is in case the referenced table belongs to a different schema

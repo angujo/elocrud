@@ -58,9 +58,17 @@ class MorphItem
         }
     }
 
+    private function morphManyMany()
+    {
+        if (!$this->many_to_many_relation) {
+            return;
+        }
+    }
+
     /**
-     * @param       $schema_name
+     * @param Morph $morph
      * @param array $details
+     * @param       $column_name
      *
      * @return MorphItem|null
      */

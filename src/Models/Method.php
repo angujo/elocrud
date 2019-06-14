@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Method
 {
@@ -76,10 +77,10 @@ class Method
             $method->setOutput('$this->morphOne('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
         } elseif ($morphItem->isManyToManyRelation()) {
             Property::phpdocProperty($prop_name, Helper::className($morphItem->getMorph()->getTableName()).'[]')->addType(Helper::baseName(Collection::class));
-            $method->imports[] = MorphMany::class;
+            $method->imports[] = MorphToMany::class;
             $method->imports[] = Collection::class;
-            $method->setOutputType(Helper::baseName(MorphMany::class));
-            $method->setOutput('$this->morphMany('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
+            $method->setOutputType(Helper::baseName(MorphToMany::class));
+            $method->setOutput('$this->morphToMany('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
         } else {
             Property::phpdocProperty($prop_name, Helper::className($morphItem->getMorph()->getTableName()).'[]')->addType(Helper::baseName(Collection::class));
             $method->imports[] = MorphMany::class;
