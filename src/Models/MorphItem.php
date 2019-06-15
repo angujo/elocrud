@@ -4,85 +4,55 @@
 namespace Angujo\Elocrud\Models;
 
 
-use Angujo\DBReader\Models\Database;
 use Angujo\DBReader\Models\Schema;
-use Exception;
 
 class MorphItem
 {
+    /** @var boolean */
+    private $by=false;
+    /** @var string */
+    private $reference_table_name;
+    /** @var string|string[]|null */
     private $table_name;
+    /** @var string|string[]|null */
     private $schema_name;
+    /** @var string */
     private $column_name;
+    /** @var bool */
     private $one_to_one_relation = false;
+    /** @var string */
     private $morph;
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $one_to_many_relation = true;
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $many_to_many_relation = false;
 
     /**
      * MorphItem constructor.
      *
-     * @param Morph $morph
-     * @param array $details
-     *
-     * @throws Exception
+     * @param      $table_name
+     * @param      $column_name
+     * @param null $schema_name
      */
-    protected function __construct(Morph $morph, array $details)
+    protected function __construct($table_name, $column_name, $schema_name = null)
     {
-        if (empty($details)) {
-            throw new Exception('Morph details should at least contain and start with table name!');
-        }
-        $f                 = array_shift($details);
-        $this->schema_name = preg_replace(["/\)(.*?)$/i", "/^\(/i"], '', $f);
-        $this->table_name  = preg_replace("/^\((.*?)\)/i", '', $f);
-        if (!is_string($this->table_name) || 1 !== preg_match('/^[a-z]/i', $this->table_name) || null == Schema::getTable($this->schema_name, $this->table_name)) {
-            throw new Exception('Invalid or missing table name!');
-        }
-        $this->morph = $morph;
-        foreach ($details as $detail) {
-            if (in_array($detail, ['1-1', '1-0', '0-0'])) {
-                $this->one_to_one_relation   = 0 === strcasecmp('1-1', $detail);
-                $this->one_to_many_relation  = 0 === strcasecmp('1-0', $detail);
-                $this->many_to_many_relation = 0 === strcasecmp('0-0', $detail);
-            } elseif (null === $this->column_name && is_string($detail) && 1 === preg_match('/^[a-z]/i', $detail)) {
-                $this->column_name = $detail;
-            }
-        }
-        if (!$this->column_name && count($this->getTable()->primary_columns) !== 1) {
-            throw new Exception("The table {$this->table_name} contains composite primary keys!");
-        }
-    }
-
-    private function morphManyMany()
-    {
-        if (!$this->many_to_many_relation) {
-            return;
-        }
+        $this->table_name  = $table_name;
+        $this->column_name = $column_name;
+        $this->schema_name = $schema_name;
     }
 
     /**
-     * @param Morph $morph
-     * @param array $details
-     * @param       $column_name
+     * @param      $table_name
+     * @param      $column_name
+     * @param null $schema_name
      *
-     * @return MorphItem|null
+     * @return MorphItem
      */
-    public static function commentDefinition(Morph $morph, array $details, $column_name)
+    public static function create($table_name, $column_name, $schema_name = null)
     {
-        $me = null;
-        try {
-            $me = new self($morph, $details);
-        } catch (\Throwable $exception) {
-            $me = null;
-        } finally {
-            return $me;
-        }
+        return new self($table_name, $column_name, $schema_name);
     }
+
 
     public function getTable()
     {
@@ -142,16 +112,94 @@ class MorphItem
     }
 
     /**
-     * @return Morph
+     * @return Morph|null
      */
-    public function getMorph(): Morph
+    public function getMorph(): ?Morph
     {
-        return $this->morph;
+        return Morpher::getMorph($this->morph);
     }
 
     public function tableReference()
     {
         return $this->schema_name.'.'.$this->table_name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->getMorph()->getName();
+    }
+
+    /**
+     * @param string $morph_reference
+     *
+     * @return MorphItem
+     */
+    public function setMorphReference($morph_reference): MorphItem
+    {
+        $this->morph = $morph_reference;
+        return $this;
+    }
+
+    /**
+     * @param string $relation
+     *
+     * @return $this
+     */
+    public function setRelation($relation)
+    {
+        if (!in_array($relation, ['1-1', '1-0', '0-0'])) {
+            return $this;
+        }
+        $this->one_to_one_relation   = 0 === strcasecmp('1-1', $relation);
+        $this->one_to_many_relation  = 0 === strcasecmp('1-0', $relation);
+        $this->many_to_many_relation = 0 === strcasecmp('0-0', $relation);
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getReferenceTableName(): string
+    {
+        return $this->reference_table_name;
+    }
+
+    /**
+     * @param string $reference_table_name
+     *
+     * @return MorphItem
+     */
+    public function setReferenceTableName(string $reference_table_name): MorphItem
+    {
+        $this->reference_table_name = $reference_table_name;
+        return $this;
+    }
+
+    public function getReturnTableName()
+    {
+        return $this->reference_table_name ?: $this->getMorph()->getTableName();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isBy(): bool
+    {
+        return $this->by;
+    }
+
+    /**
+     * @param bool $by
+     *
+     * @return MorphItem
+     */
+    public function setBy(bool $by): MorphItem
+    {
+        $this->by = $by;
+        return $this;
     }
 
 }

@@ -59,34 +59,44 @@ class Method
         $method->setOutput('$this->morphTo();');
         $method->imports[] = MorphTo::class;
         $prop              = Property::phpdocProperty($morph->getName())->addType('NULL');
+        $cmt               = [];
         foreach ($morph->getItems() as $item) {
+            if ($morph->getReferenced() && $item->isBy()) continue;
             $method->imports[] = Config::namespace().'\\'.Helper::className($item->getTableName());
             $prop->addType(Helper::className($item->getTableName()));
+            $cmt[] = Inflector::singularize(Helper::className($item->getTableName()));
         }
+        $method->setComment('Get  '.implode('/', $cmt).' that is assigned to this '.Helper::className(Inflector::singularize($morph->getTableName())));
         return $method;
     }
 
     public static function fromMorphItem(MorphItem $morphItem)
     {
-        $method            = new self($prop_name = $morphItem->isOneToOneRelation() ? Inflector::singularize($morphItem->getMorph()->getName()) : Inflector::pluralize($morphItem->getMorph()->getName()));
-        $method->imports[] = Config::namespace().'\\'.Helper::className($morphItem->getMorph()->getTableName());
+        $method            = new self($prop_name = lcfirst(Inflector::classify($morphItem->isOneToOneRelation() ? Inflector::singularize($morphItem->getReturnTableName()) : Inflector::pluralize($morphItem->getReturnTableName()))));
+        $method->imports[] = Config::namespace().'\\'.Helper::className($morphItem->getReturnTableName());
+        $method->setComment('Get all of '.Inflector::pluralize(Helper::className($morphItem->getReturnTableName())).' that are assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
         if ($morphItem->isOneToOneRelation()) {
-            Property::phpdocProperty($prop_name, Helper::className($morphItem->getMorph()->getTableName()))->addType('NULL');
+            $method->setComment('Get  '.Inflector::singularize(Helper::className($morphItem->getReturnTableName())).' that is assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
+            Property::phpdocProperty($prop_name, Helper::className($morphItem->getReturnTableName()))->addType('NULL');
             $method->imports[] = MorphOne::class;
             $method->setOutputType(Helper::baseName(MorphOne::class));
-            $method->setOutput('$this->morphOne('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
+            $method->setOutput('$this->morphOne('.Helper::className($morphItem->getReturnTableName()).'::class, \''.$morphItem->getName().'\');');
         } elseif ($morphItem->isManyToManyRelation()) {
-            Property::phpdocProperty($prop_name, Helper::className($morphItem->getMorph()->getTableName()).'[]')->addType(Helper::baseName(Collection::class));
-            $method->imports[] = MorphToMany::class;
+            Property::phpdocProperty($prop_name, Helper::className($morphItem->getReturnTableName()).'[]')->addType(Helper::baseName(Collection::class));
             $method->imports[] = Collection::class;
+            $method->imports[] = MorphToMany::class;
             $method->setOutputType(Helper::baseName(MorphToMany::class));
-            $method->setOutput('$this->morphToMany('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
+            if ($morphItem->isBy()) {
+                $method->setOutput('$this->morphedByMany('.Helper::className($morphItem->getReturnTableName()).'::class, \''.$morphItem->getName().'\');');
+            } else {
+                $method->setOutput('$this->morphToMany('.Helper::className($morphItem->getReturnTableName()).'::class, \''.$morphItem->getName().'\');');
+            }
         } else {
-            Property::phpdocProperty($prop_name, Helper::className($morphItem->getMorph()->getTableName()).'[]')->addType(Helper::baseName(Collection::class));
+            Property::phpdocProperty($prop_name, Helper::className($morphItem->getReturnTableName()).'[]')->addType(Helper::baseName(Collection::class));
             $method->imports[] = MorphMany::class;
             $method->imports[] = Collection::class;
             $method->setOutputType(Helper::baseName(MorphMany::class));
-            $method->setOutput('$this->morphMany('.Helper::className($morphItem->getMorph()->getTableName()).'::class, \''.$morphItem->getMorph()->getName().'\');');
+            $method->setOutput('$this->morphMany('.Helper::className($morphItem->getReturnTableName()).'::class, \''.$morphItem->getName().'\');');
         }
         return $method;
     }
@@ -96,8 +106,9 @@ class Method
         $method = new self($name = Config::relationFunctionName($foreignKey), $return);
         $method->setReturns(true);
         $method->namespace = $namespace;
-        $method->addComment('Relationship method to call constraint class!');
+        $method->setComment('Get all of '.Inflector::pluralize(Helper::className($foreignKey->foreign_table_name)).' that are assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
         if ($foreignKey->isOneToOne()) {
+            $method->setComment('Get '.Inflector::singularize(Helper::className($foreignKey->foreign_table_name)).' that is assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
             $method->setOutput('$this->hasOne('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
             $method->setOutputType(Helper::baseName(HasOne::class));
             $method->imports[] = HasOne::class;

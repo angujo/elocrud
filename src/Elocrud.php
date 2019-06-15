@@ -6,7 +6,6 @@ namespace Angujo\Elocrud;
 
 use Angujo\DBReader\Drivers\Connection;
 use Angujo\DBReader\Models\Database;
-use Angujo\DBReader\Models\DBTable;
 use Angujo\DBReader\Models\Schema;
 use Angujo\Elocrud\Models\Model;
 use Angujo\Elocrud\Models\Morpher;

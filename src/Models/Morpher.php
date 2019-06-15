@@ -5,8 +5,6 @@ namespace Angujo\Elocrud\Models;
 
 
 use Angujo\DBReader\Drivers\Connection;
-use Angujo\DBReader\Models\Database;
-use Angujo\DBReader\Models\DBColumn;
 use Angujo\DBReader\Models\DBTable;
 use Angujo\DBReader\Models\Schema;
 use Angujo\Elocrud\Helper;
@@ -35,12 +33,8 @@ class Morpher
             }
             $tmp[$table->name][$name][] = $column->name;
             if (count($tmp[$table->name][$name]) === 2) {
-                foreach ($tmp[$table->name][$name] as $col_name) {
-                    if (Helper::isMorphType($col_name)) {
-                        self::$morphs[$table->schema_name.'.'.$table->name] = Morph::fromColumn($table->getColumn($col_name));
-                        break;
-                    }
-                }
+                $morph                                  = Morph::create($name, $table->name, $table->schema_name);
+                self::$morphs[$morph->getReferenceId()] = $morph;
                 unset($tmp[$table->name][$name]);
             }
         }
@@ -51,10 +45,21 @@ class Morpher
         if (!is_string($schema_name)) {
             $schema_name = Connection::currentDatabase(true);
         }
-        if (!($table = Schema::getTable($schema_name, $table_name)) || !($column = $table->getColumn($name))) {
+        if (!($table = Schema::getTable($schema_name, $table_name)) || !($column = $table->getColumn($name.'_type'))) {
             return;
         }
-        self::$morphs[$schema_name.'.'.$table_name][$name] = Morph::fromColumn($column);
+        $morph                                  = Morph::create($name, $table->name, $table->schema_name);
+        self::$morphs[$morph->getReferenceId()] = $morph;
+    }
+
+    /**
+     * @param $reference
+     *
+     * @return Morph|null
+     */
+    public static function getMorph($reference)
+    {
+        return array_key_exists($reference, self::$morphs) ? self::$morphs[$reference] : null;
     }
 
     /**
@@ -71,7 +76,7 @@ class Morpher
         if (!$schema_name) {
             $schema_name = Connection::currentDatabase(true);
         }
-        return array_filter(self::$morphs, function($k) use ($schema_name, $table_name){ return 0 === strcasecmp($k, $schema_name.'.'.$table_name); }, ARRAY_FILTER_USE_KEY);
+        return array_filter(self::$morphs, function($k) use ($schema_name, $table_name){ return 0 === stripos($k, $schema_name.'.'.$table_name); }, ARRAY_FILTER_USE_KEY);
     }
 
     /**
