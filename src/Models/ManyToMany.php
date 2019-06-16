@@ -21,6 +21,7 @@ class ManyToMany
 
     /**
      * Name of the joining table
+     *
      * @var string
      */
     private $name;
@@ -59,13 +60,12 @@ class ManyToMany
     public static function checkLoadTable(DBTable $table)
     {
         foreach ($table->foreign_keys_one_to_one as $foreignKey) {
-
             $me = new self($table->name);
             self::setColumnDetails($me, $foreignKey, true);
             $me->column_name    = $foreignKey->column_name;
-            $other_foreign_keys = array_filter($table->foreign_keys_one_to_one, function (ForeignKey $key) use ($foreignKey) { return $foreignKey !== $key; });
+            $other_foreign_keys = array_filter($table->foreign_keys_one_to_one, function(ForeignKey $key) use ($foreignKey){ return $foreignKey !== $key; });
             foreach ($other_foreign_keys as $other_foreign_key) {
-                $nme              = clone $me;
+                $nme                  = clone $me;
                 $nme->ref_column_name = $other_foreign_key->column_name;
                 self::setColumnDetails($nme, $other_foreign_key);
                 self::$relations[] = $nme;
@@ -73,7 +73,24 @@ class ManyToMany
         }
     }
 
-    private static function setColumnDetails(self $me, ForeignKey $foreignKey, $c = false)
+    /**
+     * Check if table is valid for Many To Many Relation
+     *
+     * @param DBTable $table
+     *
+     * @return bool
+     */
+    public static function isManyToMany(DBTable $table)
+    {
+        return (count($table->columns) >= 2 && count($table->foreign_keys_one_to_one) === 2);
+    }
+
+    /**
+     * @param self       $me
+     * @param ForeignKey $foreignKey
+     * @param bool       $c
+     */
+    private static function setColumnDetails(ManyToMany $me, ForeignKey $foreignKey, $c = false)
     {
         if ($c) {
             $me->table_name  = $foreignKey->foreign_table_name;
@@ -84,9 +101,14 @@ class ManyToMany
         }
     }
 
+    /**
+     * @param DBTable $table
+     *
+     * @return ManyToMany[]|array
+     */
     public static function getManyRelations(DBTable $table)
     {
-        return array_filter(self::$relations, function (self $self) use ($table) { return 0 === strcasecmp($table->reference, $self->getReference()); });
+        return array_filter(self::$relations, function(self $self) use ($table){ return 0 === strcasecmp($table->reference, $self->getReference()); });
     }
 
     public function getReference()
