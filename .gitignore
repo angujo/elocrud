@@ -57,3 +57,4 @@ fabric.properties
 /vendor/
 /test/output-mysql/
 /test/output/
+/test/connect.php

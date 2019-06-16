@@ -7,8 +7,10 @@ namespace Angujo\Elocrud;
 use Angujo\DBReader\Drivers\Connection;
 use Angujo\DBReader\Models\Database;
 use Angujo\DBReader\Models\Schema;
+use Angujo\Elocrud\Models\ManyToMany;
 use Angujo\Elocrud\Models\Model;
 use Angujo\Elocrud\Models\Morpher;
+use Closure;
 
 class Elocrud
 {
@@ -24,7 +26,7 @@ class Elocrud
         return array_sum(array_map(function(Schema $schema){ return count($schema->tables); }, $this->database->schemas));
     }
 
-    public function modelsOutput(\Closure $closure)
+    public function modelsOutput(Closure $closure)
     {
         foreach ($this->database->schemas as $schema) {
             foreach ($schema->tables as $table) {
@@ -32,6 +34,7 @@ class Elocrud
                     continue;
                 }
                 Morpher::fromTable($table);
+                ManyToMany::checkLoadTable($table);
             }
             foreach ($schema->tables as $table) {
                 if (!$this->allowTable($table->name)) {
@@ -43,7 +46,7 @@ class Elocrud
     }
 
     /**
-     * @param null|\Closure $closure
+     * @param null|Closure $closure
      */
     public function writeModels($closure = null)
     {

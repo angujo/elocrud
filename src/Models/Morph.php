@@ -150,7 +150,7 @@ class Morph
      */
     public function getItems(): array
     {
-        return array_filter(Morpher::getMorphItems(), function(MorphItem $morphItem){ return $morphItem->getMorph() == $this; });
+        return array_filter(Morpher::getMorphItems(), function(MorphItem $morphItem){ return $morphItem->getMorph() === $this; });
     }
 
     /**

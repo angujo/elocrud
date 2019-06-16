@@ -5,6 +5,7 @@ namespace Angujo\Elocrud;
 
 
 use Angujo\DBReader\Models\ForeignKey;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Class Config
@@ -26,6 +27,7 @@ use Angujo\DBReader\Models\ForeignKey;
  * @method static array create_columns();
  * @method static array update_columns();
  * @method static array type_casts();
+ * @method static string column_relation_pattern();
  */
 class Config
 {
@@ -36,6 +38,7 @@ class Config
 
     protected static $_defaults = [
         'relation_name' => self::AUTO,
+        'column_relation_pattern' => '',
         'soft_delete_columns' => ['deleted_at'],
         'excluded_tables' => ['migrations'],
         'only_tables' => [],
@@ -45,7 +48,7 @@ class Config
         'overwrite' => false,
         'relation_remove_sfx' => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
-        'model_class' => \Illuminate\Database\Eloquent\Model::class,
+        'model_class' => Model::class,
         'base_dir' => Helper::BASE_DIR,
         'composite_keys' => true,
         'base_abstract' => true,

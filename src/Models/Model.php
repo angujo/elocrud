@@ -156,6 +156,15 @@ class Model
         }
     }
 
+    protected function setManyToMany()
+    {
+        $rels=ManyToMany::getManyRelations($this->table);
+        foreach ($rels as $rel) {
+            $method=Method::fromManyToMany($rel);
+            $this->imports = array_merge($this->imports, $method->getImports());
+        }
+    }
+
     protected function setMorphedTo()
     {
         $morphs = Morpher::getTableMorphs($this->table->name, $this->table->schema_name);
@@ -210,6 +219,7 @@ class Model
         $this->setForeignKeys();
         $this->setMorphedTo();
         $this->setMorphedReference();
+        $this->setManyToMany();
         if (Config::base_abstract()) {
             $this->content = Helper::replacePlaceholder('abstract', 'abstract ', $this->content);
         }

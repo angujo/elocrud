@@ -14,6 +14,7 @@ use Angujo\Elocrud\Models\Model;
 use Illuminate\Console\Command;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class ConsoleCommands extends Command
 {
@@ -65,7 +66,7 @@ class ConsoleCommands extends Command
             });
             $bar->finish();
             $this->table(['Table', 'Class', 'BaseTable Class', 'Created at'], $entries);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $this->error($exception->getCode().'::'.$exception->getMessage());
             $this->error($exception->getTraceAsString());
         }

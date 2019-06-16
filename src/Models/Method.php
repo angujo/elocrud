@@ -9,6 +9,7 @@ use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Helper;
 use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -18,20 +19,20 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Method
 {
-    private $comment;
-    private $returns = true;
-    private $name;
-    private $run;
-    private $output;
-    private $output_type;
-    private $static = false;
-    private $access = 'public';
-    private static $me = [];
-    private static $def_name = '_default_';
+    private        $comment;
+    private        $returns    = true;
+    private        $name;
+    private        $run;
+    private        $output;
+    private        $output_type;
+    private        $static     = false;
+    private        $access     = 'public';
+    private static $me         = [];
+    private static $def_name   = '_default_';
     private static $c_name;
-    private $namespace;
-    private $imports = [];
-    private $properties = [];
+    private        $namespace;
+    private        $imports    = [];
+    private        $properties = [];
 
     protected function __construct($name, $fly = false)
     {
@@ -51,6 +52,20 @@ class Method
         self::$me[self::$c_name] = [];
     }
 
+    public static function fromManyToMany(ManyToMany $toMany)
+    {
+        $method = new self($name = lcfirst(Inflector::pluralize($toMany->getRefTableName())));
+        Property::phpdocProperty($name, Helper::className($toMany->getRefTableName()).'[]')->addType(Helper::baseName(Collection::class));
+        $method->imports[] = Collection::class;
+        $method->setComment('Get '.Inflector::pluralize(Helper::className($toMany->getRefTableName())).' that belong to this '.Helper::className(Inflector::singularize($toMany->getTableName())));
+        $method->setReturns(true);
+        $method->setOutputType(Helper::baseName(BelongsToMany::class));
+        $method->setOutput('$this->belongsToMany('.Helper::className($toMany->getRefTableName()).'::class, \''.$toMany->getName().'\', \''.$toMany->getColumnName().'\', \''.$toMany->getRefColumnName().'\');');
+        $method->imports[] = BelongsToMany::class;
+        $method->imports[] = Config::namespace().'\\'.Helper::className($toMany->getRefTableName());
+        return $method;
+    }
+
     public static function fromMorph(Morph $morph)
     {
         $method = new self($morph->getName());
@@ -61,7 +76,9 @@ class Method
         $prop              = Property::phpdocProperty($morph->getName())->addType('NULL');
         $cmt               = [];
         foreach ($morph->getItems() as $item) {
-            if ($morph->getReferenced() && $item->isBy()) continue;
+            if ($morph->getReferenced() && $item->isBy()) {
+                continue;
+            }
             $method->imports[] = Config::namespace().'\\'.Helper::className($item->getTableName());
             $prop->addType(Helper::className($item->getTableName()));
             $cmt[] = Inflector::singularize(Helper::className($item->getTableName()));
@@ -118,11 +135,12 @@ class Method
             }
         }
         if ($foreignKey->isOneToMany()) {
+            $method->name = Inflector::pluralize($name);
             $method->setOutput('$this->hasMany('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
             $method->setOutputType(Helper::baseName(HasMany::class));
             $method->imports[] = Collection::class;
             $method->imports[] = HasMany::class;
-            Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name).'[]', Helper::toWords($foreignKey->name))->addType('Collection');
+            Property::phpdocProperty($method->name, Helper::className($foreignKey->foreign_table_name).'[]', Helper::toWords($foreignKey->name))->addType('Collection');
             if (Config::base_abstract()) {
                 $method->imports[] = Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name);
             }

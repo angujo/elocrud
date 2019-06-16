@@ -21,29 +21,29 @@ return [
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
      */
-    'soft_delete_columns'     => ['deleted_at'],
+    'soft_delete_columns' => ['deleted_at'],
 
     /*
      * Tables to be excluded from model generation
      */
-    'excluded_tables'         => ['migrations'],
+    'excluded_tables' => ['migrations'],
     /*
      *Tables to be run ONLY
      * The reset will be excluded
      */
-    'only_tables'             => [],
+    'only_tables' => [],
     /*
      * Column names to mark as create columns
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
      */
-    'create_columns'          => ['created_at'],
+    'create_columns' => ['created_at'],
     /*
      * Columns to be used as update
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
      */
-    'update_columns'          => ['updated_at'],
+    'update_columns' => ['updated_at'],
     /*
      * Prefix used to mark relationship column names
      * Depends on naming conventions
@@ -58,24 +58,24 @@ return [
      * It is recommended to have a prefix/suffix/both to separate the column value from the relation,
      * otherwise, might break the models
      */
-    'relation_remove_prx'     => 'fk',
+    'relation_remove_prx' => 'fk',
     /*
      * @see doc for 'relation_remove_prx' above
      */
-    'relation_remove_sfx'     => 'id',
+    'relation_remove_sfx' => 'id',
     /*
      * Class to be used for each and every generated model
      * Ensure it is or extends \Illuminate\Database\Eloquent\Model::class
      */
-    'model_class'             => Model::class,
+    'model_class' => Model::class,
     /*
      * Directory path to put the models
      */
-    'base_dir'                => app_path('Models'),
+    'base_dir' => app_path('Models'),
     /*
      * Enable composite keys in laravel
      */
-    'composite_keys'          => true,
+    'composite_keys' => true,
     /*
      * Name of class to be used in customizing Eloquent to accommodate composite keys.
      */
@@ -83,23 +83,29 @@ return [
     /*
      * Create abstract classes to act as BASE Class for teh tables
      */
-    'base_abstract'           => true,
+    'base_abstract' => true,
     /*
      * Namespace for the models
      */
-    'namespace'               => 'App\Models',
+    'namespace' => 'App\Models',
     /*
      * Pivoting allows Laravel's hasManyThrough to be extended.
      * Currently, we extend upto 3 levels deep
      * NOTE: This relies on foreign keys, so will not work if not set on tables.
      * Any value greater than 3 will be considered as 3 and any less than zero converted to 0
      */
-    'pivot_level'             => 0,
+    'pivot_level' => 0,
     /*
      * This is the nested namespace from the "base_dir" above
      * to be used for pivot tables
      */
-    'pivot_extension_name'    => 'Pivots',
+    'pivot_extension_name' => 'Pivots',
+    /*
+     * Column naming pattern to auto identify without the Foreign Keys
+     * This will check column names and set relation based off them.
+     * Set to empty or null so as not to use
+     */
+    'column_relation_pattern' => '{table_name}_id',
     /*
      * @link https://laravel.com/docs/eloquent-relationships#polymorphic-relations
      * Add polymorphic tables as well.
@@ -107,7 +113,7 @@ return [
      * On the "_type" list all tables to be referenced on the column's comments (Optional)
      * The primaryKey of the referenced table will be considered by default, otherwise,
      * the column name should be indicated if different from primaryKey
-     * If the morph is not one to many, an indicator should be added i.e. 1-1=One to One, 1-0=One to Many, 0-0=Many to Many, with One to Many being the default
+     * If the morph is not one to many, an indicator should be added i.e. 1-1=One to One, 1-0=One to Many(default), 0-0=Many to Many
      *
      * Syntax 1: table_name1,table_name2,.... table_nameN -- primary column used and one to many assumed
      * Syntax 2: table_name1:column_name1,table_name2:column_name2,... table_nameN:column_nameN -- primary column not used but one to many assumed
@@ -125,12 +131,12 @@ return [
      * ONLY POSSIBLE FOR NON-COMPOSITE PRI-KEYs
      * All listing should be separated by a comma
      */
-    'polymorph'               => true,
+    'polymorph' => true,
     /*
      * Type Casting for properties and database values.
      * You can cast using a column name or data type.
      * To cast data type e.g. tinyint(1) to be boolean,
      * start with "type:" followed by the type i.e. "type:tinyint(1)"=>'boolean'
      */
-    'type_casts'              => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean', 'type:date' => 'date:Y-m-d', 'type:datetime' => 'datetime:Y-m-d H:i:s'],
+    'type_casts' => ['type:tinyint(1)' => 'boolean', '%_json' => 'array', '%_array' => 'array', 'is_%' => 'boolean', 'type:date' => 'date:Y-m-d', 'type:datetime' => 'datetime:Y-m-d H:i:s'],
 ];

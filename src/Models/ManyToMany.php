@@ -1,0 +1,161 @@
+<?php
+/**
+ * Created for elocrud.
+ * User: Angujo Barrack
+ * Date: 2019-06-16
+ * Time: 5:06 AM
+ */
+
+namespace Angujo\Elocrud\Models;
+
+
+use Angujo\DBReader\Models\DBTable;
+use Angujo\DBReader\Models\ForeignKey;
+
+class ManyToMany
+{
+    /**
+     * @var self[]
+     */
+    private static $relations = [];
+
+    /**
+     * Name of the joining table
+     * @var string
+     */
+    private $name;
+    /**
+     * @var string
+     */
+    private $table_name;
+    /**
+     * @var string
+     */
+    private $schema_name;
+    /**
+     * @var string
+     */
+    private $column_name;
+    /**
+     * @var string
+     */
+    private $ref_column_name;
+    /**
+     * @var string
+     */
+    private $ref_table_name;
+    /**
+     * @var string
+     */
+    private $ref_schema_name;
+
+    protected function __construct($name, $table_name = null, $schema_name = null)
+    {
+        $this->name        = $name;
+        $this->table_name  = $table_name;
+        $this->schema_name = $schema_name;
+    }
+
+    public static function checkLoadTable(DBTable $table)
+    {
+        foreach ($table->foreign_keys_one_to_one as $foreignKey) {
+
+            $me = new self($table->name);
+            self::setColumnDetails($me, $foreignKey, true);
+            $me->column_name    = $foreignKey->column_name;
+            $other_foreign_keys = array_filter($table->foreign_keys_one_to_one, function (ForeignKey $key) use ($foreignKey) { return $foreignKey !== $key; });
+            foreach ($other_foreign_keys as $other_foreign_key) {
+                $nme              = clone $me;
+                $nme->ref_column_name = $other_foreign_key->column_name;
+                self::setColumnDetails($nme, $other_foreign_key);
+                self::$relations[] = $nme;
+            }
+        }
+    }
+
+    private static function setColumnDetails(self $me, ForeignKey $foreignKey, $c = false)
+    {
+        if ($c) {
+            $me->table_name  = $foreignKey->foreign_table_name;
+            $me->schema_name = $foreignKey->foreign_table_schema;
+        } else {
+            $me->ref_table_name  = $foreignKey->foreign_table_name;
+            $me->ref_schema_name = $foreignKey->foreign_table_schema;
+        }
+    }
+
+    public static function getManyRelations(DBTable $table)
+    {
+        return array_filter(self::$relations, function (self $self) use ($table) { return 0 === strcasecmp($table->reference, $self->getReference()); });
+    }
+
+    public function getReference()
+    {
+        return implode('.', [$this->schema_name, $this->table_name]);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return null
+     */
+    public function getTableName()
+    {
+        return $this->table_name;
+    }
+
+    /**
+     * @return null
+     */
+    public function getSchemaName()
+    {
+        return $this->schema_name;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getColumnName()
+    {
+        return $this->column_name;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRefColumnName()
+    {
+        return $this->ref_column_name;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRefTableName()
+    {
+        return $this->ref_table_name;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRefSchemaName()
+    {
+        return $this->ref_schema_name;
+    }
+
+    /**
+     * @return self[]
+     */
+    public static function getRelations(): array
+    {
+        return self::$relations;
+    }
+
+}
