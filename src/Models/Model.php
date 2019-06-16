@@ -85,7 +85,7 @@ class Model
             $this->dates($column);
         }
         if (2 !== $timeStamp) {
-            Property::attribute('protected', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
+            Property::attribute('public', 'timestamps', false, 'Recognize timestamps')->setType('boolean');
         }
     }
 
