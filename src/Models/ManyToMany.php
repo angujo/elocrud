@@ -59,11 +59,17 @@ class ManyToMany
 
     public static function checkLoadTable(DBTable $table)
     {
-        foreach ($table->foreign_keys_one_to_one as $foreignKey) {
+        if (!self::isManyToMany($table)) {
+            return;
+        }
+        $keys=$table->foreign_keys_one_to_one;
+        foreach ($keys as $foreignKey) {
             $me = new self($table->name);
             self::setColumnDetails($me, $foreignKey, true);
             $me->column_name    = $foreignKey->column_name;
-            $other_foreign_keys = array_filter($table->foreign_keys_one_to_one, function(ForeignKey $key) use ($foreignKey){ return $foreignKey !== $key; });
+            $other_foreign_keys = array_filter($table->foreign_keys_one_to_one, function(ForeignKey $key) use ($foreignKey){
+                return 0 !== strcasecmp($foreignKey->column_reference, $key->column_reference);
+            });
             foreach ($other_foreign_keys as $other_foreign_key) {
                 $nme                  = clone $me;
                 $nme->ref_column_name = $other_foreign_key->column_name;
