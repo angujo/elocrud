@@ -63,7 +63,7 @@ class Model
                     Property::attribute('protected', 'primaryKey', $column->name, 'Primary Key')->setType('string');
                 }
                 if (!$column->is_auto_increment) {
-                    Property::attribute('protected', 'incrementing', false, 'Primary Key is not auto-incrementing')->setType('boolean');
+                    Property::attribute('public', 'incrementing', false, 'Primary Key is not auto-incrementing')->setType('boolean');
                 }
                 if (!$column->type->isInt) {
                     Property::attribute('protected', 'keyType', 'string', 'The "type" of the auto-incrementing ID')->setType('string');
