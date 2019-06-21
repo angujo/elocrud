@@ -54,7 +54,7 @@ class Method
 
     public static function fromManyToMany(ManyToMany $toMany)
     {
-        $method = new self($name = lcfirst(Inflector::pluralize($toMany->getRefTableName())));
+        $method = new self($name = lcfirst(Inflector::pluralize(Inflector::classify($toMany->getRefTableName()))));
         Property::phpdocProperty($name, Helper::className($toMany->getRefTableName()).'[]')->addType(Helper::baseName(Collection::class));
         $method->imports[] = Collection::class;
         $method->setComment('Get '.Inflector::pluralize(Helper::className($toMany->getRefTableName())).' that belong to this '.Helper::className(Inflector::singularize($toMany->getTableName())));
