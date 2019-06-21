@@ -58,6 +58,7 @@ class Model
             if (count($this->table->primary_columns) > 1) {
                 Property::attribute('protected', 'primaryKey', array_values(array_map(function(DBColumn $column){ return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
             } else {
+                /** @var DBColumn $column */
                 $column = array_values($this->table->primary_columns)[0];
                 if (0 !== strcasecmp('id', $column->name)) {
                     Property::attribute('protected', 'primaryKey', $column->name, 'Primary Key')->setType('string');
@@ -65,7 +66,7 @@ class Model
                 if (!$column->is_auto_increment) {
                     Property::attribute('public', 'incrementing', false, 'Primary Key is not auto-incrementing')->setType('boolean');
                 }
-                if (!$column->type->isInt) {
+                if (!$column->type->isPhpinteger) {
                     Property::attribute('protected', 'keyType', 'string', 'The "type" of the auto-incrementing ID')->setType('string');
                 }
             }
