@@ -159,6 +159,7 @@ class Model
 
     protected function setManyToMany()
     {
+        return;
         $rels=ManyToMany::getManyRelations($this->table);
         foreach ($rels as $rel) {
             $method=Method::fromManyToMany($rel);
