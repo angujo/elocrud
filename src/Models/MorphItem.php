@@ -121,7 +121,7 @@ class MorphItem
 
     public function tableReference()
     {
-        return $this->schema_name.'.'.$this->table_name;
+        return implode('.',[$this->schema_name,$this->table_name]);
     }
 
     /**

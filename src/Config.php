@@ -67,7 +67,7 @@ class Config
                 $clsName = self::cleanClassName($foreignKey->name);
                 break;
             case self::COLUMN_NAME:
-                $clsName = self::cleanClassName($foreignKey->isOneToOne() && !$foreignKey->unique_column ? $foreignKey->column_name : $foreignKey->foreign_column_name);
+                $clsName = self::cleanClassName($foreignKey->isOneToOne() && !$foreignKey->is_unique ? $foreignKey->column_name : $foreignKey->foreign_column_name);
                 break;
             default:
                 $clsName = self::autoRelationNaming($foreignKey);
@@ -78,7 +78,7 @@ class Config
     protected static function autoRelationNaming(ForeignKey $foreignKey)
     {
         if ($foreignKey->isOneToOne()) {
-            if ($foreignKey->unique_column) {
+            if ($foreignKey->is_unique) {
                 return 0 === strcasecmp(self::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
                     Helper::className($foreignKey->foreign_table_name) :
                     self::cleanClassName($foreignKey->foreign_column_name);

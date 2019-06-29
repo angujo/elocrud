@@ -87,7 +87,7 @@ class Morpher
     public static function getMorphItems(DBTable $table = null): array
     {
         if ($table) {
-            return array_filter(self::$morph_items, function(MorphItem $morphItem) use ($table){ return 0 === strcasecmp($table->schema_naming, $morphItem->tableReference()); });
+            return array_filter(self::$morph_items, function(MorphItem $morphItem) use ($table){ return 0 === strcasecmp($table->reference, $morphItem->tableReference()); });
         }
         return self::$morph_items;
     }

@@ -100,10 +100,10 @@ class ManyToMany
     {
         if ($c) {
             $me->table_name  = $foreignKey->foreign_table_name;
-            $me->schema_name = $foreignKey->foreign_table_schema;
+            $me->schema_name = $foreignKey->foreign_schema_name;
         } else {
             $me->ref_table_name  = $foreignKey->foreign_table_name;
-            $me->ref_schema_name = $foreignKey->foreign_table_schema;
+            $me->ref_schema_name = $foreignKey->foreign_schema_name;
         }
     }
 

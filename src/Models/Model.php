@@ -41,7 +41,7 @@ class Model
         $this->abstractName = 'Base'.Helper::className($this->table->name);
         $this->namespace    = Config::namespace().(Config::base_abstract() ? '\BaseTables' : '');
         $this->fileName     = $this->className.'.php';
-        Property::attribute('protected', 'table', $table->has_schema ? $table->query_name : $table->name, 'Model Table')->setType('string');
+        Property::attribute('protected', 'table', $table->has_schema ? $table->reference : $table->name, 'Model Table')->setType('string');
         $this->fillables = Property::attribute('protected', 'fillable', [], 'Mass assignable columns')->setType('array');
     }
 
@@ -159,7 +159,7 @@ class Model
 
     protected function setManyToMany()
     {
-        return;
+       // return;
         $rels=ManyToMany::getManyRelations($this->table);
         foreach ($rels as $rel) {
             $method=Method::fromManyToMany($rel);

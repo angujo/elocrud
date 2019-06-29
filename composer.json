@@ -23,10 +23,7 @@
   "repositories": [
     {
       "type": "path",
-      "url": "H:\\www\\dbreader",
-      "options": {
-        "symlink": true
-      }
+      "url": "H:\\www\\dbreader"
     }
   ],
   "extra": {
