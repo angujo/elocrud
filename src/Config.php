@@ -35,10 +35,11 @@ class Config
     const COLUMN_NAME     = 'column';
     const CONSTRAINT_NAME = 'constraint';
     const AUTO            = 'auto';
+    const NAME_REL_PERC   = 70;
 
     protected static $_defaults = [
         'relation_name' => self::AUTO,
-        'column_relation_pattern' => '',
+        'column_relation_pattern' => '{table_name}_id',
         'soft_delete_columns' => ['deleted_at'],
         'excluded_tables' => ['migrations'],
         'only_tables' => [],

@@ -103,6 +103,7 @@ return [
     /*
      * Column naming pattern to auto identify without the Foreign Keys
      * This will check column names and set relation based off them.
+     * Percentage similarity will be set to 70%
      * Set to empty or null so as not to use
      */
     'column_relation_pattern' => '{table_name}_id',

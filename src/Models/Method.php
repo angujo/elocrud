@@ -120,7 +120,7 @@ class Method
 
     public static function fromForeignKey(ForeignKey $foreignKey, $namespace, $return = false)
     {
-        $method = new self($name = Config::relationFunctionName($foreignKey), $return);
+        $method = new self(Config::relationFunctionName($foreignKey), $return);
         $method->setReturns(true);
         $method->namespace = $namespace;
         $method->setComment('Get all of '.Inflector::pluralize(Helper::className($foreignKey->foreign_table_name)).' that are assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
@@ -129,13 +129,16 @@ class Method
             $method->setOutput('$this->hasOne('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
             $method->setOutputType(Helper::baseName(HasOne::class));
             $method->imports[] = HasOne::class;
-            Property::phpdocProperty($name, Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
+            Property::phpdocProperty($method->name, Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
             if (Config::base_abstract()) {
                 $method->imports[] = Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name);
             }
         }
         if ($foreignKey->isOneToMany()) {
-            $method->name = Inflector::pluralize($name);
+            $method->name = Inflector::pluralize(lcfirst(Helper::className($foreignKey->foreign_table_name)));
+            if ($foreignKey->foreign_column->comment && 1 === preg_match('/({)([a-z]\w+)(})/i', $foreignKey->foreign_column->comment, $matches)) {
+                $method->name = Inflector::pluralize(lcfirst(Helper::className($matches[2])));
+            }
             $method->setOutput('$this->hasMany('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
             $method->setOutputType(Helper::baseName(HasMany::class));
             $method->imports[] = Collection::class;
