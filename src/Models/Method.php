@@ -38,8 +38,8 @@ class Method
     {
         self::$c_name = self::$def_name;
         $this->setName($name);
-        if (false === $fly) {
-            self::$me[self::$c_name][] = $this;
+        if (false === $fly && !isset(self::$me[self::$c_name][$name])) {
+            self::$me[self::$c_name][$name] = $this;
         }
     }
 
