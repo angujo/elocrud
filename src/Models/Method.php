@@ -147,14 +147,11 @@ class Method
 
     private static function toManyFK(ForeignKey $foreignKey, $namespace)
     {
-        $method = new self(Config::relationFunctionName($foreignKey));
+        $name   = $foreignKey->foreign_column->comment && 1 === preg_match('/({)([a-z]\w+)(})/i', $foreignKey->foreign_column->comment, $matches) ? $matches[2] : $foreignKey->foreign_table_name;
+        $method = new self(Inflector::pluralize(lcfirst(Helper::className($name))));
         $method->setReturns(true);
         $method->namespace = $namespace;
         $method->setComment('Get all of '.Inflector::pluralize(Helper::className($foreignKey->foreign_table_name)).' that are assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
-        $method->name = Inflector::pluralize(lcfirst(Helper::className($foreignKey->foreign_table_name)));
-        if ($foreignKey->foreign_column->comment && 1 === preg_match('/({)([a-z]\w+)(})/i', $foreignKey->foreign_column->comment, $matches)) {
-            $method->name = Inflector::pluralize(lcfirst(Helper::className($matches[2])));
-        }
         $method->setOutput('$this->hasMany('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
         $method->setOutputType(Helper::baseName(HasMany::class));
         $method->imports[] = Collection::class;
