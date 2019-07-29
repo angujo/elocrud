@@ -11,10 +11,12 @@ namespace Angujo\Elocrud\Laravel;
 
 use Angujo\DBReader\Drivers\Connection;
 use Angujo\Elocrud\Config;
+use Angujo\DBReader\Drivers\Config as DBConfig;
 use Angujo\Elocrud\Elocrud;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Support\Facades\DB;
 
 class Factory
 {
@@ -50,7 +52,12 @@ class Factory
 
     public function setConnection(ConnectionInterface $connection, $driver)
     {
-        Connection::setPDO($connection->getPdo(), $driver);
+        $cname = \config('database.default');
+        DBConfig::set(\config("database.connections.$cname.driver"), \config("database.connections.$cname.host"),
+            \config("database.connections.$cname.port"), \config("database.connections.$cname.database"),
+            \config("database.connections.$cname.username"), \config("database.connections.$cname.password"));
+        Connection::fromConfig();
+        //Connection::setPDO($connection->getPdo(), $driver);
         $this->elocrud = new Elocrud();
     }
 
