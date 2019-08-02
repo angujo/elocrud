@@ -114,7 +114,7 @@ class Property
      */
     private static function phpdoc($name, $type = null, $comment = null)
     {
-        return self::$instances[__FUNCTION__][] = (new self($name))->setComment($comment)->setType($type);
+        return self::$instances[__FUNCTION__][$name] = (new self($name))->setComment($comment)->setType($type);
     }
 
     /**
@@ -127,12 +127,12 @@ class Property
      */
     public static function constant($name, $value, $access = 'public', $comment = null)
     {
-        return self::$instances[__FUNCTION__][] = (new self($name, $value))->setComment($comment)->setAccess($access);
+        return self::$instances[__FUNCTION__][$name] = (new self($name, $value))->setComment($comment)->setAccess($access);
     }
 
     public static function attribute($access, $name, $value = null, $comment = null)
     {
-        return self::$instances[__FUNCTION__][] = (new self($name, $value))->setComment($comment)->setAccess($access);
+        return self::$instances[__FUNCTION__][$name] = (new self($name, $value))->setComment($comment)->setAccess($access);
     }
 
     public static function getAttributes()
