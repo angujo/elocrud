@@ -101,7 +101,7 @@ class Model
 
     protected function dates(DBColumn $column)
     {
-        if (!$column->type->isDateTime) {
+        if (!$column->type->isDateTime && !$column->type->isDate) {
             return;
         }
         if (!$this->dates) {
