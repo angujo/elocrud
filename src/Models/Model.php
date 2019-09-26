@@ -23,7 +23,7 @@ class Model
     protected $fillables;
     protected $casts;
     protected $dates;
-    protected $uses = [];
+    protected $uses    = [];
 
     private $table;
     private $fileName;
@@ -56,7 +56,7 @@ class Model
         if (count($this->table->primary_columns) > 0) {
             $pk = null;
             if (count($this->table->primary_columns) > 1) {
-                Property::attribute('protected', 'primaryKey', array_values(array_map(function(DBColumn $column){ return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
+                Property::attribute('protected', 'primaryKey', array_values(array_map(function (DBColumn $column) { return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
             } else {
                 /** @var DBColumn $column */
                 $column = array_values($this->table->primary_columns)[0];
@@ -74,7 +74,8 @@ class Model
         $timeStamp = 0;
         foreach ($this->table->columns as $column) {
             Property::fromColumn($column);
-            if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) && $column->type->isDateTime) {
+            if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) &&
+                ($column->type->isDateTime || $column->type->isTimestamp || $column->type->isTimestampTz)) {
                 $timeStamp++;
             }
             if (!$column->is_auto_increment) {
@@ -101,7 +102,7 @@ class Model
 
     protected function dates(DBColumn $column)
     {
-        if (!$column->type->isDateTime && !$column->type->isDate) {
+        if (!$column->type->isDateTime && !$column->type->isDate && !$column->type->isTimestampTz && !$column->type->isTimestamp) {
             return;
         }
         if (!$this->dates) {
@@ -113,7 +114,8 @@ class Model
 
     protected function softDeletes(DBColumn $column)
     {
-        if (!in_array($column->name, Config::soft_delete_columns()) || !$column->type->isDateTime) {
+        if (!in_array($column->name, Config::soft_delete_columns()) ||
+            (!$column->type->isDateTime && !$column->type->isDate && !$column->type->isTimestampTz && !$column->type->isTimestamp)) {
             return;
         }
         $this->uses[]    = SoftDeletes::class;
@@ -159,10 +161,10 @@ class Model
 
     protected function setManyToMany()
     {
-       // return;
-        $rels=ManyToMany::getManyRelations($this->table);
+        // return;
+        $rels = ManyToMany::getManyRelations($this->table);
         foreach ($rels as $rel) {
-            $method=Method::fromManyToMany($rel);
+            $method        = Method::fromManyToMany($rel);
             $this->imports = array_merge($this->imports, $method->getImports());
         }
     }
@@ -225,8 +227,8 @@ class Model
         if (Config::base_abstract()) {
             $this->content = Helper::replacePlaceholder('abstract', 'abstract ', $this->content);
         }
-        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function($cls){ return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
-        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function($cls){ return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
+        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function ($cls) { return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
+        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
         $this->content = Helper::replacePlaceholder('constants', Property::getConstantText(), $this->content);
         $this->content = Helper::replacePlaceholder('properties', Property::getPhpDocText(), $this->content);
         $this->content = Helper::replacePlaceholder('extends', $this->extends, $this->content);
