@@ -74,10 +74,18 @@ class Property
     {
         self::constant(strtoupper($column->name), $column->name)->setComment('Column name: '.$column->name);
         //echo '<pre>';var_dump($column->type->isPhpinteger,$column->type->isInt,$column->data_type);
-        $prop = self::phpdocProperty($column->name, $cast_type ?: $column->type->phpName(), is_array($column->data_type) ? implode(',', $column->data_type) : $column->data_type);
+        $prop = self::phpdocProperty($column->name, self::getColumnType($column, $cast_type), is_array($column->data_type) ? implode(',', $column->data_type) : $column->data_type);
         if ($column->is_nullable && !$column->is_primary && !$column->is_auto_increment) {
             $prop->addType('NULL');
         }
+    }
+
+    protected static function getColumnType(DBColumn $column, $cast_type = null)
+    {
+        if (!$cast_type || ($cast_type && ($column->type->isDateTime || $column->type->isDate || $column->type->isTime || $column->type->isTimestamp || $column->type->isTimestampTz))) {
+            return $column->type->phpName();
+        }
+        return $cast_type;
     }
 
     /**
