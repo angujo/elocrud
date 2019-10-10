@@ -73,7 +73,8 @@ class Model
         }
         $timeStamp = 0;
         foreach ($this->table->columns as $column) {
-            Property::fromColumn($column);
+          $ctype=  $this->setCast($column);
+            Property::fromColumn($column,$ctype);
             if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) &&
                 ($column->type->isDateTime || $column->type->isTimestamp || $column->type->isTimestampTz)) {
                 $timeStamp++;
@@ -82,7 +83,6 @@ class Model
                 $this->fillables->addValue($column->name);
                 $this->defaultColumn($column);
             }
-            $this->setCast($column);
             $this->softDeletes($column);
             $this->dates($column);
         }
@@ -150,6 +150,7 @@ class Model
         if (null !== $type) {
             $this->casts->addValue($type, $column->name);
         }
+        return $type;
     }
 
     protected function autoColumn(DBColumn $column)
