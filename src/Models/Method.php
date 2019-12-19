@@ -19,22 +19,22 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Method
 {
-    private        $comment;
-    private        $returns    = true;
-    private        $name;
-    private        $run;
-    private        $output;
-    private        $output_type;
-    private        $static     = false;
-    private        $access     = 'public';
-    private static $me         = [];
-    private static $def_name   = '_default_';
+    private $comment;
+    private $returns = true;
+    private $name;
+    private $run;
+    private $output;
+    private $output_type;
+    private $static = false;
+    private $access = 'public';
+    private static $me = [];
+    private static $def_name = '_default_';
     private static $c_name;
-    private        $namespace;
-    private        $imports    = [];
-    private        $properties = [];
+    private $namespace;
+    private $imports = [];
+    private $properties = [];
 
-    protected function __construct($name, $fly = false)
+    public function __construct($name, $fly = false)
     {
         self::$c_name = self::$def_name;
         $this->setName($name);
@@ -394,11 +394,28 @@ class Method
         return $this;
     }
 
+    public function addImport($item)
+    {
+        $this->imports[] = $item;
+        return $this;
+    }
+
     /**
      * @return array
      */
     public function getProperties(): array
     {
         return $this->properties;
+    }
+
+    /**
+     * @param mixed $namespace
+     *
+     * @return Method
+     */
+    public function setNamespace($namespace)
+    {
+        $this->namespace = $namespace;
+        return $this;
     }
 }
