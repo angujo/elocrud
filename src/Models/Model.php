@@ -97,7 +97,7 @@ class Model
         foreach ($keys as $foreignKey) {
             $method        = Method::fromForeignKey($foreignKey, $this->namespace);
             $this->imports = array_merge($this->imports, $method->getImports());
-        };
+        }
     }
 
     protected function dates(DBColumn $column)

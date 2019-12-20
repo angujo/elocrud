@@ -131,7 +131,7 @@ class Method
 
     private static function toOneFK(ForeignKey $foreignKey, $namespace)
     {
-        $method = new self(Config::relationFunctionName($foreignKey));
+        $method = new self(Config::relationFunctionName($foreignKey,Config::CLASS_NAME));
         $method->setReturns(true);
         $method->namespace = $namespace;
         $method->setComment('Get '.Inflector::singularize(Helper::className($foreignKey->foreign_table_name)).' that is assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
