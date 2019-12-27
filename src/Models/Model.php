@@ -9,6 +9,7 @@ use Angujo\DBReader\Models\DBTable;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Helper;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Model
@@ -23,7 +24,9 @@ class Model
     protected $fillables;
     protected $casts;
     protected $dates;
-    protected $uses    = [];
+    protected $uses = [];
+    /** @var Method[] */
+    protected $functions = [];
 
     private $table;
     private $fileName;
@@ -33,7 +36,7 @@ class Model
     public function __construct(DBTable $table)
     {
         Property::init();
-        Method::init();
+        // Method::init();
         $this->setExtension(Config::model_class());
         $this->table        = $table;
         $this->content      = file_get_contents(Helper::BASE_DIR.'/stubs/model-template.tmpl');
@@ -56,7 +59,7 @@ class Model
         if (count($this->table->primary_columns) > 0) {
             $pk = null;
             if (count($this->table->primary_columns) > 1) {
-                Property::attribute('protected', 'primaryKey', array_values(array_map(function (DBColumn $column) { return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
+                Property::attribute('protected', 'primaryKey', array_values(array_map(function(DBColumn $column){ return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
             } else {
                 /** @var DBColumn $column */
                 $column = array_values($this->table->primary_columns)[0];
@@ -73,8 +76,8 @@ class Model
         }
         $timeStamp = 0;
         foreach ($this->table->columns as $column) {
-          $ctype=  $this->setCast($column);
-            Property::fromColumn($column,$ctype);
+            $ctype = $this->setCast($column);
+            Property::fromColumn($column, $ctype);
             if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) &&
                 ($column->type->isDateTime || $column->type->isTimestamp || $column->type->isTimestampTz)) {
                 $timeStamp++;
@@ -93,11 +96,22 @@ class Model
 
     protected function setForeignKeys()
     {
-        $keys = $this->table->foreign_keys;
-        foreach ($keys as $foreignKey) {
-            $method        = Method::fromForeignKey($foreignKey, $this->namespace);
-            $this->imports = array_merge($this->imports, $method->getImports());
+        $this->functions = array_merge(
+            $this->functions,
+            BelongsToEntry::methods($this->table, $this->namespace),
+            HasOneEntry::methods($this->table, $this->namespace),
+            HasManyEntry::methods($this->table, $this->namespace),
+            HasManyThroughEntry::methods($this->table, $this->namespace)
+        );
+
+        foreach ($this->functions as $function) {
+            $this->imports = array_merge($this->imports, $function->getImports());
         }
+    }
+
+    protected function getFunctions()
+    {
+        return Method::arrayToString($this->functions);
     }
 
     protected function dates(DBColumn $column)
@@ -163,11 +177,11 @@ class Model
     protected function setManyToMany()
     {
         // return;
-        $rels = ManyToMany::getManyRelations($this->table);
+        /*$rels = ManyToMany::getManyRelations($this->table);
         foreach ($rels as $rel) {
             $method        = Method::fromManyToMany($rel);
             $this->imports = array_merge($this->imports, $method->getImports());
-        }
+        }*/
     }
 
     protected function setMorphedTo()
@@ -228,15 +242,15 @@ class Model
         if (Config::base_abstract()) {
             $this->content = Helper::replacePlaceholder('abstract', 'abstract ', $this->content);
         }
-        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function ($cls) { return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
-        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
+        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function($cls){ return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
+        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function($cls){ return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
         $this->content = Helper::replacePlaceholder('constants', Property::getConstantText(), $this->content);
         $this->content = Helper::replacePlaceholder('properties', Property::getPhpDocText(), $this->content);
         $this->content = Helper::replacePlaceholder('extends', $this->extends, $this->content);
         $this->content = Helper::replacePlaceholder('attributes', Property::getAttributeText(), $this->content);
         $this->content = Helper::replacePlaceholder('class', Config::base_abstract() ? $this->abstractName : $this->className, $this->content);
         $this->content = Helper::replacePlaceholder('namespace', $this->namespace, $this->content);
-        $this->content = Helper::replacePlaceholder('functions', Method::textFormat(), $this->content);
+        $this->content = Helper::replacePlaceholder('functions', $this->getFunctions(), $this->content);
         return Helper::cleanPlaceholder($this->content);
     }
 
