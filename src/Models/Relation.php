@@ -42,7 +42,7 @@ abstract class Relation
      *
      * @return Method
      */
-    protected abstract function getMethod(ForeignKey $foreignKey);
+   // protected abstract function getMethod(ForeignKey $foreignKey);
 
     /**
      * HasOneEntry constructor.

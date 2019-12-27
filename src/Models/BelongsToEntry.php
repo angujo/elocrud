@@ -27,7 +27,7 @@ class BelongsToEntry extends Relation
 
     protected function getMethod(ForeignKey $foreignKey)
     {
-        $method = new Method(Config::relationFunctionName($foreignKey, Config::CLASS_NAME));
+        $method = new Method(Config::relationFunctionName($foreignKey, Config::COLUMN_NAME));
         $method->setReturns(true);
         $method->setNamespace($this->namespace);
         $method->setComment('Get '.Inflector::singularize(Helper::className($foreignKey->foreign_table_name)).' that is assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
