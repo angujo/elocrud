@@ -122,7 +122,7 @@ class Morpher
             return $r;
         };
         foreach (self::$maps as $table => $class) {
-            $table = Inflector::singularize(strtolower($table));
+          //  $table = Inflector::singularize(strtolower($table));
             $maps  .= ($maps ? '                ' : '')."'{$table}' ".$spaces($max - (strlen($table) + 2))."=> '{$class}',\n";
         }
         $space=$maps?'        ':'';
