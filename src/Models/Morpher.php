@@ -7,7 +7,9 @@ namespace Angujo\Elocrud\Models;
 use Angujo\DBReader\Drivers\Connection;
 use Angujo\DBReader\Models\DBTable;
 use Angujo\DBReader\Models\Schema;
+use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Helper;
+use Doctrine\Common\Inflector\Inflector;
 
 class Morpher
 {
@@ -19,6 +21,8 @@ class Morpher
      * @var MorphItem[]
      */
     private static $morph_items = [];
+
+    private static $maps = [];
 
     protected function __construct()
     {
@@ -105,5 +109,32 @@ class Morpher
         self::$morph_items = $morph_items;
     }
 
+    public static function setMaps()
+    {
+        $maps   = '';
+        $max    = max(array_map(function($k){ return strlen($k); }, array_keys(self::$maps)));
+        $spaces = function($c){
+            $r = '';
+            while ($c>0) {
+                $r .= ' ';
+                $c--;
+            }
+            return $r;
+        };
+        foreach (self::$maps as $table => $class) {
+            $table = Inflector::singularize(strtolower($table));
+            $maps  .= ($maps ? '                ' : '')."'{$table}' ".$spaces($max - (strlen($table) + 2))."=> '{$class}',\n";
+        }
+        $space=$maps?'        ':'';
+        $content = file_get_contents(Helper::BASE_DIR.'/stubs/morph-map.tmpl');
+        $content = Helper::replacePlaceholder('maps', "[{$maps}{$space}]", $content);
+        $content = Helper::replacePlaceholder('namespace', Config::namespace().'\\Extensions', $content);
+        file_put_contents(Config::dir_path().'\Extensions\RelationMorphMap.php', Helper::cleanPlaceholder($content));
+    }
+
+    public static function addMap($table_name, $class)
+    {
+        self::$maps[$table_name] = $class;
+    }
 
 }

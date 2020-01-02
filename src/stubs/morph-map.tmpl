@@ -1,0 +1,23 @@
+<?php
+
+namespace ${namespace};
+
+
+/**
+ * @see https://laravel.com/docs/eloquent-relationships#custom-polymorphic-types
+ *
+ * This class should be called in the project's service provider as documented.
+ * Can be used directly as;
+ * Relation::morphMap(${namespace}\RelationMorphMap::getMaps());
+ * OR
+ * By extending with own custom morphs;
+ * Relation::morphMap(array_merge(${namespace}\RelationMorphMap::getMaps(),[...],[...],...));
+ *
+ */
+class RelationMorphMap
+{
+    public static function getMaps()
+    {
+        return ${maps};
+    }
+}

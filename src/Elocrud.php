@@ -34,7 +34,7 @@ class Elocrud
                     continue;
                 }
                 Morpher::fromTable($table);
-               // ManyToMany::checkLoadTable($table);
+                // ManyToMany::checkLoadTable($table);
             }
             foreach ($schema->tables as $table) {
                 if (!$this->allowTable($table->name)) {
@@ -62,7 +62,9 @@ class Elocrud
             if ($closure && is_callable($closure)) {
                 $closure($model);
             }
+            Morpher::addMap($model->getTable()->name, Config::namespace().'\\'.$model->getClassName());
         });
+        Morpher::setMaps();
     }
 
     protected function extendLaravelModel()

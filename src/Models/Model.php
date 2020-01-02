@@ -76,8 +76,8 @@ class Model
         $timeStamp = 0;
         foreach ($this->table->columns as $column) {
             $ctype = $this->setCast($column);
-            Property::fromColumn($column, $ctype);
-            if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) &&
+            Property::fromColumn($column, $ctype);$types=array_merge(Config::create_columns(), Config::update_columns());
+            if (in_array($column->name, $types) &&
                 ($column->type->isDateTime || $column->type->isTimestamp || $column->type->isTimestampTz)) {
                 $timeStamp++;
                 if (in_array($column->name, Config::create_columns()) && 0 !== strcasecmp('created_at', $column->name)) {
