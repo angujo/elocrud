@@ -55,14 +55,14 @@ class Method
     public static function fromManyToMany(ManyToMany $toMany)
     {
         $method = new self($name = lcfirst(Inflector::pluralize(Inflector::classify($toMany->getRefTableName()))));
-       // Property::phpdocProperty($name, Helper::className($toMany->getRefTableName()).'[]')->addType(Helper::baseName(Collection::class));
+        // Property::phpdocProperty($name, Helper::className($toMany->getRefTableName()).'[]')->addType(Helper::baseName(Collection::class));
         $method->imports[] = Collection::class;
         $method->setComment('Get '.Inflector::pluralize(Helper::className($toMany->getRefTableName())).' that belong to this '.Helper::className(Inflector::singularize($toMany->getTableName())));
         $method->setReturns(true);
         $method->setOutputType(Helper::baseName(BelongsToMany::class));
         $method->setOutput('$this->belongsToMany('.Helper::className($toMany->getRefTableName()).'::class, \''.$toMany->getSchemaName().'.'.$toMany->getName().'\', \''.$toMany->getColumnName().'\', \''.$toMany->getRefColumnName().'\');');
-       $method->imports[] = BelongsToMany::class;
-       $method->imports[] = Config::namespace().'\\'.Helper::className($toMany->getRefTableName());
+        $method->imports[] = BelongsToMany::class;
+        $method->imports[] = Config::namespace().'\\'.Helper::className($toMany->getRefTableName());
         return $method;
     }
 

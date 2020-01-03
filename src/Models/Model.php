@@ -76,7 +76,8 @@ class Model
         $timeStamp = 0;
         foreach ($this->table->columns as $column) {
             $ctype = $this->setCast($column);
-            Property::fromColumn($column, $ctype);$types=array_merge(Config::create_columns(), Config::update_columns());
+            Property::fromColumn($column, $ctype);
+            $types = array_merge(Config::create_columns(), Config::update_columns());
             if (in_array($column->name, $types) &&
                 ($column->type->isDateTime || $column->type->isTimestamp || $column->type->isTimestampTz)) {
                 $timeStamp++;
@@ -110,7 +111,8 @@ class Model
             MorphedEntry::methods($this->table, $this->namespace)
         );
 
-        $mts = HasManyThroughEntry::methods($this->table, $this->namespace);
+        /** @var Method[] $mts */
+        $mts = array_merge(HasManyThroughEntry::methods($this->table, $this->namespace), BelongsToManyEntry::methods($this->table, $this->namespace));
         foreach ($mts as $mt) {
             if (false === current(array_filter($this->functions, function(Method $method) use ($mt){ return 0 === strcasecmp($method->getName(), $mt->getName()); }))) {
                 $this->functions[] = $mt;

@@ -34,7 +34,7 @@ class Elocrud
                     continue;
                 }
                 Morpher::fromTable($table);
-                // ManyToMany::checkLoadTable($table);
+                ManyToMany::checkLoadTable($table);
             }
             foreach ($schema->tables as $table) {
                 if (!$this->allowTable($table->name)) {
