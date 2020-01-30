@@ -37,13 +37,13 @@ return [
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
      */
-    'create_columns' => ['created_at'],
+    'create_columns' => ['created_at','created'],
     /*
      * Columns to be used as update
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
      */
-    'update_columns' => ['updated_at'],
+    'update_columns' => ['updated_at','updated'],
     /*
      * Prefix used to mark relationship column names
      * Depends on naming conventions

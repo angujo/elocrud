@@ -80,6 +80,17 @@ class Helper
     }
 
     /**
+     * Remove traces of column identifier
+     * @param $name
+     *
+     * @return string
+     */
+    public static function cleanClassName($name)
+    {
+        return Helper::className(trim(preg_replace('/((^'.Config::relation_remove_prx().'(_)?)|((_)?('.Config::relation_remove_prx().'|'.Config::relation_remove_sfx().')$))/i', '', $name), "_"));
+    }
+
+    /**
      * Streamline var_export to ensure arrays do not have the numbering indices
      *
      * @param $value

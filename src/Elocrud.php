@@ -62,7 +62,9 @@ class Elocrud
             if ($closure && is_callable($closure)) {
                 $closure($model);
             }
+            Morpher::addMap($model->getTable()->name, Config::namespace().'\\'.$model->getClassName());
         });
+        Morpher::setMaps();
     }
 
     protected function extendLaravelModel()

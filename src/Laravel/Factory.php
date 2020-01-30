@@ -9,14 +9,13 @@
 namespace Angujo\Elocrud\Laravel;
 
 
+use Angujo\DBReader\Drivers\Config as DBConfig;
 use Angujo\DBReader\Drivers\Connection;
 use Angujo\Elocrud\Config;
-use Angujo\DBReader\Drivers\Config as DBConfig;
 use Angujo\Elocrud\Elocrud;
 use Closure;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Facades\DB;
 
 class Factory
 {

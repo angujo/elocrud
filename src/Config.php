@@ -43,8 +43,8 @@ class Config
         'soft_delete_columns' => ['deleted_at'],
         'excluded_tables' => ['migrations'],
         'only_tables' => [],
-        'create_columns' => ['created_at'],
-        'update_columns' => ['updated_at'],
+        'create_columns' => ['created_at','created'],
+        'update_columns' => ['updated_at','updated'],
         'relation_remove_prx' => 'fk',
         'overwrite' => false,
         'relation_remove_sfx' => 'id',
@@ -65,10 +65,10 @@ class Config
                 $clsName = Helper::className($foreignKey->foreign_table_name);
                 break;
             case self::CONSTRAINT_NAME:
-                $clsName = self::cleanClassName($foreignKey->name);
+                $clsName = Helper::cleanClassName($foreignKey->name);
                 break;
             case self::COLUMN_NAME:
-                $clsName = self::cleanClassName($foreignKey->isOneToOne() && !$foreignKey->is_unique ? $foreignKey->column_name : $foreignKey->foreign_column_name);
+                $clsName = Helper::cleanClassName($foreignKey->isOneToOne() && !$foreignKey->is_unique ? $foreignKey->column_name : $foreignKey->foreign_column_name);
                 break;
             default:
                 $clsName = self::autoRelationNaming($foreignKey);
@@ -80,25 +80,20 @@ class Config
     {
         if ($foreignKey->isOneToOne()) {
             if ($foreignKey->is_unique) {
-                return 0 === strcasecmp(self::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
+                return 0 === strcasecmp(Helper::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
                     Helper::className($foreignKey->foreign_table_name) :
-                    self::cleanClassName($foreignKey->foreign_column_name);
+                    Helper::cleanClassName($foreignKey->foreign_column_name);
             }
-            return self::cleanClassName($foreignKey->column_name);
+            return Helper::cleanClassName($foreignKey->column_name);
         }
 
-        return 0 === strcasecmp(self::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
-            Helper::className($foreignKey->foreign_table_name) : self::cleanClassName($foreignKey->foreign_column_name);
+        return 0 === strcasecmp(Helper::cleanClassName($foreignKey->foreign_column_name), Helper::className($foreignKey->table_name)) ?
+            Helper::className($foreignKey->foreign_table_name) : Helper::cleanClassName($foreignKey->foreign_column_name);
     }
 
     public static function base_namespace()
     {
         return self::namespace().'\BaseTables';
-    }
-
-    protected static function cleanClassName($name)
-    {
-        return Helper::className(trim(preg_replace('/((^'.self::relation_remove_prx().'(_)?)|((_)?('.self::relation_remove_prx().'|'.self::relation_remove_sfx().')$))/i', '', $name), "_"));
     }
 
     public static function __callStatic($method, $args)

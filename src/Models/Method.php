@@ -19,22 +19,22 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Method
 {
-    private        $comment;
-    private        $returns    = true;
-    private        $name;
-    private        $run;
-    private        $output;
-    private        $output_type;
-    private        $static     = false;
-    private        $access     = 'public';
-    private static $me         = [];
-    private static $def_name   = '_default_';
+    private $comment;
+    private $returns = true;
+    private $name;
+    private $run;
+    private $output;
+    private $output_type;
+    private $static = false;
+    private $access = 'public';
+    private static $me = [];
+    private static $def_name = '_default_';
     private static $c_name;
-    private        $namespace;
-    private        $imports    = [];
-    private        $properties = [];
+    private $namespace;
+    private $imports = [];
+    private $properties = [];
 
-    protected function __construct($name, $fly = false)
+    public function __construct($name, $fly = false)
     {
         self::$c_name = self::$def_name;
         $this->setName($name);
@@ -55,7 +55,7 @@ class Method
     public static function fromManyToMany(ManyToMany $toMany)
     {
         $method = new self($name = lcfirst(Inflector::pluralize(Inflector::classify($toMany->getRefTableName()))));
-        Property::phpdocProperty($name, Helper::className($toMany->getRefTableName()).'[]')->addType(Helper::baseName(Collection::class));
+        // Property::phpdocProperty($name, Helper::className($toMany->getRefTableName()).'[]')->addType(Helper::baseName(Collection::class));
         $method->imports[] = Collection::class;
         $method->setComment('Get '.Inflector::pluralize(Helper::className($toMany->getRefTableName())).' that belong to this '.Helper::className(Inflector::singularize($toMany->getTableName())));
         $method->setReturns(true);
@@ -63,103 +63,6 @@ class Method
         $method->setOutput('$this->belongsToMany('.Helper::className($toMany->getRefTableName()).'::class, \''.$toMany->getSchemaName().'.'.$toMany->getName().'\', \''.$toMany->getColumnName().'\', \''.$toMany->getRefColumnName().'\');');
         $method->imports[] = BelongsToMany::class;
         $method->imports[] = Config::namespace().'\\'.Helper::className($toMany->getRefTableName());
-        return $method;
-    }
-
-    public static function fromMorph(Morph $morph)
-    {
-        $method = new self($morph->getName());
-        $method->setReturns(true);
-        $method->setOutputType(Helper::baseName(MorphTo::class));
-        $method->setOutput('$this->morphTo();');
-        $method->imports[] = MorphTo::class;
-        $prop              = Property::phpdocProperty($morph->getName())->addType('NULL');
-        $cmt               = [];
-        foreach ($morph->getItems() as $item) {
-            if ($morph->getReferenced() && $item->isBy()) {
-                continue;
-            }
-            $method->imports[] = Config::namespace().'\\'.Helper::className($item->getTableName());
-            $prop->addType(Helper::className($item->getTableName()));
-            $cmt[] = Inflector::singularize(Helper::className($item->getTableName()));
-        }
-        $method->setComment('Get  '.implode('/', $cmt).' that is assigned to this '.Helper::className(Inflector::singularize($morph->getTableName())));
-        return $method;
-    }
-
-    public static function fromMorphItem(MorphItem $morphItem)
-    {
-        $method            = new self($prop_name = lcfirst(Inflector::classify($morphItem->isOneToOneRelation() ? Inflector::singularize($morphItem->getReturnTableName()) : Inflector::pluralize($morphItem->getReturnTableName()))));
-        $method->imports[] = Config::namespace().'\\'.Helper::className($morphItem->getReturnTableName());
-        $method->setComment('Get all of '.Inflector::pluralize(Helper::className($morphItem->getReturnTableName())).' that are assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
-        if ($morphItem->isOneToOneRelation()) {
-            $method->setComment('Get  '.Inflector::singularize(Helper::className($morphItem->getReturnTableName())).' that is assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
-            Property::phpdocProperty($prop_name, Helper::className($morphItem->getReturnTableName()))->addType('NULL');
-            $method->imports[] = MorphOne::class;
-            $method->setOutputType(Helper::baseName(MorphOne::class));
-            $method->setOutput('$this->morphOne('.Helper::className($morphItem->getReturnTableName()).'::class, \''.$morphItem->getName().'\');');
-        } elseif ($morphItem->isManyToManyRelation()) {
-            Property::phpdocProperty($prop_name, Helper::className($morphItem->getReturnTableName()).'[]')->addType(Helper::baseName(Collection::class));
-            $method->imports[] = Collection::class;
-            $method->imports[] = MorphToMany::class;
-            $method->setOutputType(Helper::baseName(MorphToMany::class));
-            if ($morphItem->isBy()) {
-                $method->setOutput('$this->morphedByMany('.Helper::className($morphItem->getReturnTableName()).'::class, \''.$morphItem->getName().'\');');
-            } else {
-                $method->setOutput('$this->morphToMany('.Helper::className($morphItem->getReturnTableName()).'::class, \''.$morphItem->getName().'\');');
-            }
-        } else {
-            Property::phpdocProperty($prop_name, Helper::className($morphItem->getReturnTableName()).'[]')->addType(Helper::baseName(Collection::class));
-            $method->imports[] = MorphMany::class;
-            $method->imports[] = Collection::class;
-            $method->setOutputType(Helper::baseName(MorphMany::class));
-            $method->setOutput('$this->morphMany('.Helper::className($morphItem->getReturnTableName()).'::class, \''.$morphItem->getName().'\');');
-        }
-        return $method;
-    }
-
-    public static function fromForeignKey(ForeignKey $foreignKey, $namespace)
-    {
-        if ($foreignKey->isOneToOne()) {
-            return self::toOneFK($foreignKey, $namespace);
-        }
-        if ($foreignKey->isOneToMany()) {
-            return self::toManyFK($foreignKey, $namespace);
-        }
-        return null;
-    }
-
-    private static function toOneFK(ForeignKey $foreignKey, $namespace)
-    {
-        $method = new self(Config::relationFunctionName($foreignKey));
-        $method->setReturns(true);
-        $method->namespace = $namespace;
-        $method->setComment('Get '.Inflector::singularize(Helper::className($foreignKey->foreign_table_name)).' that is assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
-        $method->setOutput('$this->hasOne('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
-        $method->setOutputType(Helper::baseName(HasOne::class));
-        $method->imports[] = HasOne::class;
-        Property::phpdocProperty($method->name, Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
-        if (Config::base_abstract()) {
-            $method->imports[] = Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name);
-        }
-        return $method;
-    }
-
-    private static function toManyFK(ForeignKey $foreignKey, $namespace)
-    {
-        $name   = $foreignKey->foreign_column->comment && 1 === preg_match('/({)([a-z]\w+)(})/i', $foreignKey->foreign_column->comment, $matches) ? $matches[2] : $foreignKey->foreign_table_name;
-        $method = new self(Inflector::pluralize(lcfirst(Helper::className($name))));
-        $method->setReturns(true);
-        $method->namespace = $namespace;
-        $method->setComment('Get all of '.Inflector::pluralize(Helper::className($foreignKey->foreign_table_name)).' that are assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
-        $method->setOutput('$this->hasMany('.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\',\''.$foreignKey->column_name.'\');');
-        $method->setOutputType(Helper::baseName(HasMany::class));
-        $method->imports[] = Collection::class;
-        $method->imports[] = HasMany::class;
-        Property::phpdocProperty($method->name, Helper::className($foreignKey->foreign_table_name).'[]', Helper::toWords($foreignKey->name))->addType('Collection');
-        if (Config::base_abstract()) {
-            $method->imports[] = Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name);
-        }
         return $method;
     }
 
@@ -191,6 +94,24 @@ class Method
         /** @var Method $method */
         foreach ($entries as $method) {
             $content .= "\n\n".$method;
+        }
+        return $content;
+    }
+
+    /**
+     * @param self[] $methods
+     *
+     * @return string
+     */
+    public static function arrayToString(array $methods)
+    {
+        $content = '';
+        $methods = !is_array($methods) ? [] : $methods;
+        foreach ($methods as $method) {
+            if (!is_a($method, self::class)) {
+                continue;
+            }
+            $content .= "\n\n".$method."\n";
         }
         return $content;
     }
@@ -394,11 +315,28 @@ class Method
         return $this;
     }
 
+    public function addImport($item)
+    {
+        $this->imports[] = $item;
+        return $this;
+    }
+
     /**
      * @return array
      */
     public function getProperties(): array
     {
         return $this->properties;
+    }
+
+    /**
+     * @param mixed $namespace
+     *
+     * @return Method
+     */
+    public function setNamespace($namespace)
+    {
+        $this->namespace = $namespace;
+        return $this;
     }
 }

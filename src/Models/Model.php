@@ -23,7 +23,9 @@ class Model
     protected $fillables;
     protected $casts;
     protected $dates;
-    protected $uses    = [];
+    protected $uses = [];
+    /** @var Method[] */
+    protected $functions = [];
 
     private $table;
     private $fileName;
@@ -33,7 +35,7 @@ class Model
     public function __construct(DBTable $table)
     {
         Property::init();
-        Method::init();
+        // Method::init();
         $this->setExtension(Config::model_class());
         $this->table        = $table;
         $this->content      = file_get_contents(Helper::BASE_DIR.'/stubs/model-template.tmpl');
@@ -56,7 +58,7 @@ class Model
         if (count($this->table->primary_columns) > 0) {
             $pk = null;
             if (count($this->table->primary_columns) > 1) {
-                Property::attribute('protected', 'primaryKey', array_values(array_map(function (DBColumn $column) { return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
+                Property::attribute('protected', 'primaryKey', array_values(array_map(function(DBColumn $column){ return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
             } else {
                 /** @var DBColumn $column */
                 $column = array_values($this->table->primary_columns)[0];
@@ -73,16 +75,23 @@ class Model
         }
         $timeStamp = 0;
         foreach ($this->table->columns as $column) {
-            Property::fromColumn($column);
-            if ((in_array($column->name, Config::create_columns()) || in_array($column->name, Config::update_columns())) &&
+            $ctype = $this->setCast($column);
+            Property::fromColumn($column, $ctype);
+            $types = array_merge(Config::create_columns(), Config::update_columns());
+            if (in_array($column->name, $types) &&
                 ($column->type->isDateTime || $column->type->isTimestamp || $column->type->isTimestampTz)) {
                 $timeStamp++;
+                if (in_array($column->name, Config::create_columns()) && 0 !== strcasecmp('created_at', $column->name)) {
+                    Property::constant('CREATED_AT', $column->name, '', 'Replacement for date created');
+                }
+                if (in_array($column->name, Config::update_columns()) && 0 !== strcasecmp('updated_at', $column->name)) {
+                    Property::constant('UPDATED_AT', $column->name, '', 'Replacement for date updated');
+                }
             }
             if (!$column->is_auto_increment) {
                 $this->fillables->addValue($column->name);
                 $this->defaultColumn($column);
             }
-            $this->setCast($column);
             $this->softDeletes($column);
             $this->dates($column);
         }
@@ -91,13 +100,33 @@ class Model
         }
     }
 
-    protected function setForeignKeys()
+    protected function setMethods()
     {
-        $keys = $this->table->foreign_keys;
-        foreach ($keys as $foreignKey) {
-            $method        = Method::fromForeignKey($foreignKey, $this->namespace);
-            $this->imports = array_merge($this->imports, $method->getImports());
-        };
+        $this->functions = array_merge(
+            $this->functions,
+            BelongsToEntry::methods($this->table, $this->namespace),
+            HasOneEntry::methods($this->table, $this->namespace),
+            MorphToEntry::methods($this->table, $this->namespace),
+            HasManyEntry::methods($this->table, $this->namespace),
+            MorphedEntry::methods($this->table, $this->namespace)
+        );
+
+        /** @var Method[] $mts */
+        $mts = array_merge(HasManyThroughEntry::methods($this->table, $this->namespace), BelongsToManyEntry::methods($this->table, $this->namespace));
+        foreach ($mts as $mt) {
+            if (false === current(array_filter($this->functions, function(Method $method) use ($mt){ return 0 === strcasecmp($method->getName(), $mt->getName()); }))) {
+                $this->functions[] = $mt;
+            }
+        }
+
+        foreach ($this->functions as $function) {
+            $this->imports = array_merge($this->imports, $function->getImports());
+        }
+    }
+
+    protected function getFunctions()
+    {
+        return Method::arrayToString($this->functions);
     }
 
     protected function dates(DBColumn $column)
@@ -150,6 +179,7 @@ class Model
         if (null !== $type) {
             $this->casts->addValue($type, $column->name);
         }
+        return $type;
     }
 
     protected function autoColumn(DBColumn $column)
@@ -162,29 +192,11 @@ class Model
     protected function setManyToMany()
     {
         // return;
-        $rels = ManyToMany::getManyRelations($this->table);
+        /*$rels = ManyToMany::getManyRelations($this->table);
         foreach ($rels as $rel) {
             $method        = Method::fromManyToMany($rel);
             $this->imports = array_merge($this->imports, $method->getImports());
-        }
-    }
-
-    protected function setMorphedTo()
-    {
-        $morphs = Morpher::getTableMorphs($this->table->name, $this->table->schema_name);
-        foreach ($morphs as $morph) {
-            $method        = Method::fromMorph($morph);
-            $this->imports = array_merge($this->imports, $method->getImports());
-        }
-    }
-
-    protected function setMorphedReference()
-    {
-        $morphItems = Morpher::getMorphItems($this->table);
-        foreach ($morphItems as $morphItem) {
-            $method        = Method::fromMorphItem($morphItem);
-            $this->imports = array_merge($this->imports, $method->getImports());
-        }
+        }*/
     }
 
     protected function typeCast(DBColumn $column)
@@ -220,22 +232,23 @@ class Model
     public function toString()
     {
         $this->setColumns();
-        $this->setForeignKeys();
-        $this->setMorphedTo();
-        $this->setMorphedReference();
+        $this->setMethods();
+        // $this->setMorphedTo();
+        //$this->setMorphedReference();
         $this->setManyToMany();
         if (Config::base_abstract()) {
             $this->content = Helper::replacePlaceholder('abstract', 'abstract ', $this->content);
         }
-        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function ($cls) { return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
-        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
+        $this->content = Helper::replacePlaceholder('description', $this->getDescription(), $this->content);
+        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function($cls){ return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
+        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function($cls){ return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
         $this->content = Helper::replacePlaceholder('constants', Property::getConstantText(), $this->content);
         $this->content = Helper::replacePlaceholder('properties', Property::getPhpDocText(), $this->content);
         $this->content = Helper::replacePlaceholder('extends', $this->extends, $this->content);
         $this->content = Helper::replacePlaceholder('attributes', Property::getAttributeText(), $this->content);
         $this->content = Helper::replacePlaceholder('class', Config::base_abstract() ? $this->abstractName : $this->className, $this->content);
         $this->content = Helper::replacePlaceholder('namespace', $this->namespace, $this->content);
-        $this->content = Helper::replacePlaceholder('functions', Method::textFormat(), $this->content);
+        $this->content = Helper::replacePlaceholder('functions', $this->getFunctions(), $this->content);
         return Helper::cleanPlaceholder($this->content);
     }
 
@@ -254,6 +267,24 @@ class Model
         $content = Helper::replacePlaceholder('properties', '* Add properties here', $content);
         $content = Helper::replacePlaceholder('extends', $this->abstractName, $content);
         return Helper::cleanPlaceholder($content);
+    }
+
+    protected function getDescription()
+    {
+        $intr = " * {$this->className} is an object class for the database table {$this->table->reference}\n * This class should be used AS IS in querying data.\n"
+            ." * If 'overwrite' is enabled, it should not be modified, but can be extended by another class.\n".
+            " *\n *\n";
+        if (Config::base_abstract()) {
+            $intr = " * {$this->abstractName} is a BASE class for {$this->className}\n * It is a object model representation of teh table {$this->table->reference}.\n".
+                " * Modifications and customizations should be done on the {$this->className} class\n".
+                " *\n *\n";
+        }
+        return $intr.
+            "\n * @access public".
+            "\n * @author @angujomondi".
+            "\n * @version ".PHP_VERSION.' of PhP'.
+            "\n * @date ".date('Y-m-d H:i').
+            "\n *\n *\n";
     }
 
     /**
