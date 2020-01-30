@@ -89,7 +89,7 @@ class Model
                     $set = false;
                 }
             }
-            if ($set && !$this->softDeletes($column)) {
+            if (true===$set && false===$this->softDeletes($column)) {
                 Property::fromColumn($column, $ctype);
             }
             if (!$column->is_auto_increment) {
@@ -148,7 +148,7 @@ class Model
     {
         if (!in_array($column->name, Config::soft_delete_columns()) ||
             (!$column->type->isDateTime && !$column->type->isDate && !$column->type->isTimestampTz && !$column->type->isTimestamp)) {
-            return null;
+            return false;
         }
         $this->uses[]    = SoftDeletes::class;
         $this->imports[] = SoftDeletes::class;
