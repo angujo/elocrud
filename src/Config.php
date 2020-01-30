@@ -108,6 +108,8 @@ class Config
         }
         if (!empty($args)) {
             self::$_defaults[$method] = array_shift($args);
+        }else{
+            self::$_defaults[$method]=config('elocrud.'.strtolower($method),self::$_defaults[$method]);
         }
         return self::$_defaults[$method];
     }
