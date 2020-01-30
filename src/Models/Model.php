@@ -147,6 +147,9 @@ class Model
             (!$column->type->isDateTime && !$column->type->isDate && !$column->type->isTimestampTz && !$column->type->isTimestamp)) {
             return;
         }
+        if ( 0 !== strcasecmp('deleted_at', $column->name)) {
+            Property::constant('DELETED_AT', $column->name, '', 'Replacement for date deleted');
+        }
         $this->uses[]    = SoftDeletes::class;
         $this->imports[] = SoftDeletes::class;
     }
