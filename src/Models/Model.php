@@ -23,7 +23,7 @@ class Model
     protected $fillables;
     protected $casts;
     protected $dates;
-    protected $uses = [];
+    protected $uses    = [];
     /** @var Method[] */
     protected $functions = [];
 
@@ -58,7 +58,7 @@ class Model
         if (count($this->table->primary_columns) > 0) {
             $pk = null;
             if (count($this->table->primary_columns) > 1) {
-                Property::attribute('protected', 'primaryKey', array_values(array_map(function(DBColumn $column){ return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
+                Property::attribute('protected', 'primaryKey', array_values(array_map(function (DBColumn $column) { return $column->name; }, $this->table->primary_columns)), 'Primary Keys')->setType('array');
             } else {
                 /** @var DBColumn $column */
                 $column = array_values($this->table->primary_columns)[0];
@@ -74,25 +74,28 @@ class Model
             }
         }
         $timeStamp = 0;
+        $types     = array_merge(Config::create_columns(), Config::update_columns());
         foreach ($this->table->columns as $column) {
             $ctype = $this->setCast($column);
-            Property::fromColumn($column, $ctype);
-            $types = array_merge(Config::create_columns(), Config::update_columns());
+            $set   = true;
             if (in_array($column->name, $types) &&
                 ($column->type->isDateTime || $column->type->isTimestamp || $column->type->isTimestampTz)) {
                 $timeStamp++;
                 if (in_array($column->name, Config::create_columns()) && 0 !== strcasecmp('created_at', $column->name)) {
                     Property::constant('CREATED_AT', $column->name, '', 'Replacement for date created');
-                }
-                if (in_array($column->name, Config::update_columns()) && 0 !== strcasecmp('updated_at', $column->name)) {
+                } elseif (in_array($column->name, Config::update_columns()) && 0 !== strcasecmp('updated_at', $column->name)) {
                     Property::constant('UPDATED_AT', $column->name, '', 'Replacement for date updated');
+                } else {
+                    $set = false;
                 }
+            }
+            if ($set && !$this->softDeletes($column)) {
+                Property::fromColumn($column, $ctype);
             }
             if (!$column->is_auto_increment) {
                 $this->fillables->addValue($column->name);
                 $this->defaultColumn($column);
-            }
-            $this->softDeletes($column);
+            };
             $this->dates($column);
         }
         if (2 !== $timeStamp) {
@@ -114,7 +117,7 @@ class Model
         /** @var Method[] $mts */
         $mts = array_merge(HasManyThroughEntry::methods($this->table, $this->namespace), BelongsToManyEntry::methods($this->table, $this->namespace));
         foreach ($mts as $mt) {
-            if (false === current(array_filter($this->functions, function(Method $method) use ($mt){ return 0 === strcasecmp($method->getName(), $mt->getName()); }))) {
+            if (false === current(array_filter($this->functions, function (Method $method) use ($mt) { return 0 === strcasecmp($method->getName(), $mt->getName()); }))) {
                 $this->functions[] = $mt;
             }
         }
@@ -145,13 +148,15 @@ class Model
     {
         if (!in_array($column->name, Config::soft_delete_columns()) ||
             (!$column->type->isDateTime && !$column->type->isDate && !$column->type->isTimestampTz && !$column->type->isTimestamp)) {
-            return;
-        }
-        if ( 0 !== strcasecmp('deleted_at', $column->name)) {
-            Property::constant('DELETED_AT', $column->name, '', 'Replacement for date deleted');
+            return null;
         }
         $this->uses[]    = SoftDeletes::class;
         $this->imports[] = SoftDeletes::class;
+        if (0 !== strcasecmp('deleted_at', $column->name)) {
+            Property::constant('DELETED_AT', $column->name, '', 'Replacement for date deleted');
+            return true;
+        }
+        return false;
     }
 
     protected function defaultColumn(DBColumn $column)
@@ -243,8 +248,8 @@ class Model
             $this->content = Helper::replacePlaceholder('abstract', 'abstract ', $this->content);
         }
         $this->content = Helper::replacePlaceholder('description', $this->getDescription(), $this->content);
-        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function($cls){ return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
-        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function($cls){ return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
+        $this->content = Helper::replacePlaceholder('imports', implode("\n", array_filter(array_map(function ($cls) { return $cls ? "use $cls;" : null; }, array_unique($this->imports)))), $this->content);
+        $this->content = Helper::replacePlaceholder('uses', !empty($this->uses) ? "\tuse ".implode(',', array_filter(array_map(function ($cls) { return $cls ? Helper::baseName($cls) : null; }, array_unique($this->uses)))).';' : '', $this->content);
         $this->content = Helper::replacePlaceholder('constants', Property::getConstantText(), $this->content);
         $this->content = Helper::replacePlaceholder('properties', Property::getPhpDocText(), $this->content);
         $this->content = Helper::replacePlaceholder('extends', $this->extends, $this->content);
