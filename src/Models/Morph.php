@@ -79,7 +79,8 @@ class Morph
             Morpher::setMorphItem($item = MorphItem::create($table_name, $column_name, $schema_name));
             if ($this->referenced) {
                 $item->setReferenceTableName($this->ref_table_name);
-                Morpher::setMorphItem(MorphItem::create($this->ref_table_name, $this->referenced, $this->ref_schema_name)->setRelation($relation)->setMorphReference($this->getReferenceId())->setReferenceTableName($table_name)->setBy(true));
+                $item->setReferenceSchemaName($this->ref_schema_name);
+                Morpher::setMorphItem(MorphItem::create($this->ref_table_name, $this->referenced, $this->ref_schema_name)->setRelation($relation)->setMorphReference($this->getReferenceId())->setReferenceTableName($table_name)->setReferenceSchemaName($schema_name)->setBy(true));
             }
             $item->setRelation($relation)->setMorphReference($this->getReferenceId());
         }

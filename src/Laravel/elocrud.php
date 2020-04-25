@@ -17,6 +17,11 @@ use Illuminate\Database\Eloquent\Model;
 
 return [
     /*
+     * Separate Models based on the database/schema
+     * Recommended for cross database/schema system
+     */
+    'db_directories' => false,
+    /*
      * Column names that are used for soft delete.
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
@@ -37,13 +42,13 @@ return [
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
      */
-    'create_columns' => ['created_at','created'],
+    'create_columns' => ['created_at', 'created'],
     /*
      * Columns to be used as update
      * If different naming across tables, add them here.
      * NOTE: No two names should be on same table.
      */
-    'update_columns' => ['updated_at','updated'],
+    'update_columns' => ['updated_at', 'updated'],
     /*
      * Prefix used to mark relationship column names
      * Depends on naming conventions

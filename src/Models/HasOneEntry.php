@@ -39,7 +39,7 @@ class HasOneEntry extends Relation
         $method->addImport(HasOne::class);
         Property::phpdocProperty($method->getName(), Helper::className($foreignKey->foreign_table_name), Helper::toWords($foreignKey->name))->addType('NULL');
         if (Config::base_abstract()) {
-            $method->addImport(Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name));
+            $method->addImport(Config::workSpace($foreignKey->foreign_schema_name).'\\'.Helper::className($foreignKey->foreign_table_name));
         }
         return $method;
     }

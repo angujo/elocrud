@@ -35,7 +35,7 @@ class MorphedEntry extends Relation
     protected function getMethod(MorphItem $morphItem)
     {
         $method = new Method($prop_name = lcfirst(Inflector::classify($morphItem->isOneToOneRelation() ? Inflector::singularize($morphItem->getReturnTableName()) : Inflector::pluralize($morphItem->getReturnTableName()))));
-        $method->addImport(Config::namespace().'\\'.Helper::className($morphItem->getReturnTableName()));
+        $method->addImport(Config::workSpace($morphItem->getReturnSchemaName()).'\\'.Helper::className($morphItem->getReturnTableName()));
         $method->setComment('Get all of '.Inflector::pluralize(Helper::className($morphItem->getReturnTableName())).' that are assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
         if ($morphItem->isOneToOneRelation()) {
             $method->setComment('Get  '.Inflector::singularize(Helper::className($morphItem->getReturnTableName())).' that is assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));

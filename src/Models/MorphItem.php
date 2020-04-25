@@ -12,6 +12,8 @@ class MorphItem
     private $by=false;
     /** @var string */
     private $reference_table_name;
+    /** @var string */
+    private $reference_schema_name;
     /** @var string|string[]|null */
     private $table_name;
     /** @var string|string[]|null */
@@ -177,10 +179,20 @@ class MorphItem
         $this->reference_table_name = $reference_table_name;
         return $this;
     }
+    public function setReferenceSchemaName(string $reference_table_name): MorphItem
+    {
+        $this->reference_schema_name = $reference_table_name;
+        return $this;
+    }
 
     public function getReturnTableName()
     {
         return $this->reference_table_name ?: $this->getMorph()->getTableName();
+    }
+
+    public function getReturnSchemaName()
+    {
+        return $this->reference_schema_name ?: $this->getMorph()->getTable()->schema_name;
     }
 
     /**

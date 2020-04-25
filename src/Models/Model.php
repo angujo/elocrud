@@ -30,7 +30,8 @@ class Model
     private $table;
     private $fileName;
     private $className;
-    private $namespace;
+    private $basespace;
+    private $workspace;
 
     public function __construct(DBTable $table)
     {
@@ -40,8 +41,9 @@ class Model
         $this->table        = $table;
         $this->content      = file_get_contents(Helper::BASE_DIR.'/stubs/model-template.tmpl');
         $this->className    = Helper::className($this->table->name);
-        $this->abstractName = 'Base'.Helper::className($this->table->name);
-        $this->namespace    = Config::namespace().(Config::base_abstract() ? '\BaseTables' : '');
+        $this->abstractName = Config::baseName($this->table->name,$this->table->schema_name);
+        $this->basespace    = Config::baseSpace($table->schema_name);// Config::namespace().(Config::db_directories() ? '\\'.Helper::className($table->schema_name) : '').(Config::base_abstract() ? '\BaseTables' : '');
+        $this->workspace    = Config::workSpace($table->schema_name);// Config::namespace().(Config::db_directories() ? '\\'.Helper::className($table->schema_name) : '');
         $this->fileName     = $this->className.'.php';
         Property::attribute('protected', 'table', $table->has_schema ? $table->reference : $table->name, 'Model Table')->setType('string');
         $this->fillables = Property::attribute('protected', 'fillable', [], 'Mass assignable columns')->setType('array');
@@ -89,7 +91,7 @@ class Model
                     $set = false;
                 }
             }
-            if (true===$set && false===$this->softDeletes($column)) {
+            if (true === $set && false === $this->softDeletes($column)) {
                 Property::fromColumn($column, $ctype);
             }
             if (!$column->is_auto_increment) {
@@ -107,15 +109,15 @@ class Model
     {
         $this->functions = array_merge(
             $this->functions,
-            BelongsToEntry::methods($this->table, $this->namespace),
-            HasOneEntry::methods($this->table, $this->namespace),
-            MorphToEntry::methods($this->table, $this->namespace),
-            HasManyEntry::methods($this->table, $this->namespace),
-            MorphedEntry::methods($this->table, $this->namespace)
+            BelongsToEntry::methods($this->table, $this->workspace),
+            HasOneEntry::methods($this->table, $this->workspace),
+            MorphToEntry::methods($this->table, $this->workspace),
+            HasManyEntry::methods($this->table, $this->workspace),
+            MorphedEntry::methods($this->table, $this->workspace)
         );
 
         /** @var Method[] $mts */
-        $mts = array_merge(HasManyThroughEntry::methods($this->table, $this->namespace), BelongsToManyEntry::methods($this->table, $this->namespace));
+        $mts = array_merge(HasManyThroughEntry::methods($this->table, $this->workspace), BelongsToManyEntry::methods($this->table, $this->workspace));
         foreach ($mts as $mt) {
             if (false === current(array_filter($this->functions, function (Method $method) use ($mt) { return 0 === strcasecmp($method->getName(), $mt->getName()); }))) {
                 $this->functions[] = $mt;
@@ -255,7 +257,7 @@ class Model
         $this->content = Helper::replacePlaceholder('extends', $this->extends, $this->content);
         $this->content = Helper::replacePlaceholder('attributes', Property::getAttributeText(), $this->content);
         $this->content = Helper::replacePlaceholder('class', Config::base_abstract() ? $this->abstractName : $this->className, $this->content);
-        $this->content = Helper::replacePlaceholder('namespace', $this->namespace, $this->content);
+        $this->content = Helper::replacePlaceholder('namespace', $this->basespace, $this->content);
         $this->content = Helper::replacePlaceholder('functions', $this->getFunctions(), $this->content);
         return Helper::cleanPlaceholder($this->content);
     }
@@ -269,8 +271,8 @@ class Model
     {
         $content = file_get_contents(Helper::BASE_DIR.'/stubs/model2-template.tmpl');
         $content = Helper::replacePlaceholder('class', $this->className, $content);
-        $content = Helper::replacePlaceholder('imports', 'use '.Config::base_namespace().'\\'.$this->abstractName.';', $content);
-        $content = Helper::replacePlaceholder('namespace', Config::namespace(), $content);
+        $content = Helper::replacePlaceholder('imports', "use {$this->basespace}\\{$this->abstractName};", $content);
+        $content = Helper::replacePlaceholder('namespace', $this->workspace, $content);
         $content = Helper::replacePlaceholder('description', '* Working class to be used for customized extension of DB Base Tables', $content);
         $content = Helper::replacePlaceholder('properties', '* Add properties here', $content);
         $content = Helper::replacePlaceholder('extends', $this->abstractName, $content);
@@ -330,8 +332,8 @@ class Model
     /**
      * @return string
      */
-    public function getNamespace(): string
+    public function getBasespace(): string
     {
-        return $this->namespace;
+        return $this->basespace;
     }
 }

@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static string eloquent_extension_name();
  * @method static string namespace();
  * @method static bool overwrite();
+ * @method static bool db_directories();
  * @method static bool base_abstract();
  * @method static bool composite_keys();
  * @method static array soft_delete_columns();
@@ -43,9 +44,10 @@ class Config
         'soft_delete_columns' => ['deleted_at'],
         'excluded_tables' => ['migrations'],
         'only_tables' => [],
-        'create_columns' => ['created_at','created'],
-        'update_columns' => ['updated_at','updated'],
+        'create_columns' => ['created_at', 'created'],
+        'update_columns' => ['updated_at', 'updated'],
         'relation_remove_prx' => 'fk',
+        'db_directories' => false,
         'overwrite' => false,
         'relation_remove_sfx' => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
@@ -91,6 +93,21 @@ class Config
             Helper::className($foreignKey->foreign_table_name) : Helper::cleanClassName($foreignKey->foreign_column_name);
     }
 
+    public static function baseName($table_name, $schema_name)
+    {
+        return (self::db_directories() ? Helper::className($schema_name) : 'Base').Helper::className($table_name);
+    }
+
+    public static function baseSpace($schema_name)
+    {
+        return self::namespace().(self::base_abstract() ? '\BaseTables' : '');
+    }
+
+    public static function workSpace($schema_name)
+    {
+        return self::namespace().(self::db_directories() ? '\\'.Helper::className($schema_name) : '');
+    }
+
     public static function base_namespace()
     {
         return self::namespace().'\BaseTables';
@@ -103,24 +120,21 @@ class Config
         }
         if (!empty($args)) {
             self::$_defaults[$method] = array_shift($args);
-        }else{
-            self::$_defaults[$method]=config('elocrud.'.strtolower($method),self::$_defaults[$method]);
+        } else {
+            self::$_defaults[$method] = config('elocrud.'.strtolower($method), self::$_defaults[$method]);
         }
         return self::$_defaults[$method];
     }
 
-    public static function dir_path($path = null)
+    public static function dir_path($path = null, $schema_name = null)
     {
-        if (null === $path) {
-            return self::$_defaults['base_dir'];
-        }
         if (function_exists('config')) {
             self::$_defaults['base_dir'] = config('elocrud.base_dir', self::$_defaults['base_dir']);
         }
         if ($path) {
             self::$_defaults['base_dir'] = trim($path, "\\/");
         }
-        return self::$_defaults['base_dir'];
+        return self::$_defaults['base_dir'].(self::db_directories() && $schema_name ? DIRECTORY_SEPARATOR.Helper::className($schema_name) : '');
     }
 
     public static function base_dir($path = null)

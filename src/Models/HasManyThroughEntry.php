@@ -50,8 +50,8 @@ class HasManyThroughEntry extends Relation
         $method->addImport(HasManyThrough::class);
         Property::phpdocProperty($method->getName(), Helper::className($foreignKey_int->foreign_table_name).'[]', Helper::toWords($foreignKey_int->name));
         if (Config::base_abstract()) {
-            $method->addImport(Config::namespace().'\\'.Helper::className($foreignKey->foreign_table_name))
-                   ->addImport(Config::namespace().'\\'.Helper::className($foreignKey_int->foreign_table_name));
+            $method->addImport(Config::workSpace($foreignKey->foreign_schema_name).'\\'.Helper::className($foreignKey->foreign_table_name))
+                   ->addImport(Config::workSpace($foreignKey_int->foreign_schema_name).'\\'.Helper::className($foreignKey_int->foreign_table_name));
         }
         return $method;
     }

@@ -33,6 +33,16 @@ abstract class Relation
     protected $namespace;
 
     /**
+     * @var string
+     */
+    protected $workspace;
+
+    /**
+     * @var string
+     */
+    protected $basespace;
+
+    /**
      * @return self
      */
     protected abstract function generate();
@@ -42,7 +52,7 @@ abstract class Relation
      *
      * @return Method
      */
-   // protected abstract function getMethod(ForeignKey $foreignKey);
+    // protected abstract function getMethod(ForeignKey $foreignKey);
 
     /**
      * HasOneEntry constructor.
@@ -54,6 +64,7 @@ abstract class Relation
     {
         $this->table     = $table;
         $this->namespace = $namespace;
+
     }
 
     /**
@@ -131,7 +142,7 @@ abstract class Relation
      */
     private function isPrimaryKey($column_name)
     {
-        return false !== array_search($column_name, array_map(function(DBColumn $column){ return $column->name; }, $this->table->primary_columns));
+        return false !== array_search($column_name, array_map(function (DBColumn $column) { return $column->name; }, $this->table->primary_columns));
     }
 
     /**

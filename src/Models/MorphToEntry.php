@@ -46,7 +46,7 @@ class MorphToEntry extends Relation
             if ($morph->getReferenced() && $item->isBy()) {
                 continue;
             }
-            $method->addImport(Config::namespace().'\\'.Helper::className($item->getTableName()));
+            $method->addImport(Config::workSpace($item->getSchemaName()).'\\'.Helper::className($item->getTableName()));
             $prop->addType(Helper::className($item->getTableName()));
             $cmt[] = Inflector::singularize(Helper::className($item->getTableName()));
         }
