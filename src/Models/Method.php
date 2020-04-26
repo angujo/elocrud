@@ -62,7 +62,7 @@ class Method
         $method->setOutputType(Helper::baseName(BelongsToMany::class));
         $method->setOutput('$this->belongsToMany('.Helper::className($toMany->getRefTableName()).'::class, \''.$toMany->getSchemaName().'.'.$toMany->getName().'\', \''.$toMany->getColumnName().'\', \''.$toMany->getRefColumnName().'\');');
         $method->imports[] = BelongsToMany::class;
-        $method->imports[] = Config::namespace().'\\'.Helper::className($toMany->getRefTableName());
+        $method->imports[] = Config::workSpace($toMany->getRefSchemaName()).'\\'.Helper::className($toMany->getRefTableName());
         return $method;
     }
 

@@ -80,7 +80,7 @@ class Morpher
         if (!$schema_name) {
             $schema_name = Connection::currentDatabase(true);
         }
-        return array_filter(self::$morphs, function($k) use ($schema_name, $table_name){ return 0 === stripos($k, $schema_name.'.'.$table_name); }, ARRAY_FILTER_USE_KEY);
+        return array_filter(self::$morphs, function ($k) use ($schema_name, $table_name) { return 0 === stripos($k, $schema_name.'.'.$table_name); }, ARRAY_FILTER_USE_KEY);
     }
 
     /**
@@ -91,7 +91,7 @@ class Morpher
     public static function getMorphItems(DBTable $table = null): array
     {
         if ($table) {
-            return array_filter(self::$morph_items, function(MorphItem $morphItem) use ($table){ return 0 === strcasecmp($table->reference, $morphItem->tableReference()); });
+            return array_filter(self::$morph_items, function (MorphItem $morphItem) use ($table) { return 0 === strcasecmp($table->reference, $morphItem->tableReference()); });
         }
         return self::$morph_items;
     }
@@ -111,30 +111,38 @@ class Morpher
 
     public static function setMaps()
     {
-        $maps   = '';
-        $max    = max(array_map(function($k){ return strlen($k); }, array_keys(self::$maps)));
-        $spaces = function($c){
-            $r = '';
-            while ($c>0) {
-                $r .= ' ';
-                $c--;
-            }
-            return $r;
-        };
-        foreach (self::$maps as $table => $class) {
-          //  $table = Inflector::singularize(strtolower($table));
-            $maps  .= ($maps ? '                ' : '')."'{$table}' ".$spaces($max - (strlen($table) + 2))."=> '{$class}',\n";
+        $schema_maps = [];
+        foreach (self::$maps as $table_ref => $class) {
+            $ex                          = explode('.', $table_ref);
+            $schema_maps[$ex[0]][$ex[1]] = $class;
         }
-        $space=$maps?'        ':'';
-        $content = file_get_contents(Helper::BASE_DIR.'/stubs/morph-map.tmpl');
-        $content = Helper::replacePlaceholder('maps', "[{$maps}{$space}]", $content);
-        $content = Helper::replacePlaceholder('namespace', Config::namespace().'\\Extensions', $content);
-        file_put_contents(Config::dir_path().'\Extensions\RelationMorphMap.php', Helper::cleanPlaceholder($content));
+        foreach ($schema_maps as $schema_name => $table_map) {
+            $maps   = '';
+            $max    = max(array_map(function ($k) { return strlen(count($ex = explode('.', $k)) > 1 ? $ex[1] : $ex[0]); }, array_keys($table_map)));
+            $spaces = function ($c) {
+                $r = '';
+                while ($c > 0) {
+                    $r .= ' ';
+                    $c--;
+                }
+                return $r;
+            };
+            foreach ($table_map as $table => $class) {
+                //  $table = Inflector::singularize(strtolower($table));
+                $maps .= ($maps ? '                ' : '')."'{$table}' ".$spaces($max - (strlen($table) + 2))."=> '{$class}',\n";
+            }
+            $className=(Config::db_directories() && $schema_name ? Helper::className($schema_name) : 'Relation').'MorphMap';
+            $space   = $maps ? '        ' : '';
+            $content = file_get_contents(Helper::BASE_DIR.'/stubs/morph-map.tmpl');
+            $content = Helper::replacePlaceholder('maps', "[{$maps}{$space}]", $content);
+            $content = Helper::replacePlaceholder('class', $className, $content);
+            $content = Helper::replacePlaceholder('namespace', Config::namespace().'\\Extensions', $content);
+            file_put_contents(Config::dir_path().DIRECTORY_SEPARATOR.'Extensions'.DIRECTORY_SEPARATOR."{$className}.php", Helper::cleanPlaceholder($content));
+        }
     }
 
-    public static function addMap($table_name, $class)
+    public static function addMap($table_name, $class, $schema_name)
     {
-        self::$maps[$table_name] = $class;
+        self::$maps[($schema_name ? "{$schema_name}." : '').$table_name] = $class;
     }
-
 }

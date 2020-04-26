@@ -63,7 +63,7 @@ class Elocrud
             if ($closure && is_callable($closure)) {
                 $closure($model);
             }
-            Morpher::addMap($model->getTable()->name, Config::namespace().'\\'.$model->getClassName());
+            Morpher::addMap($model->getTable()->name, Config::workSpace($model->getTable()->schema_name).'\\'.$model->getClassName(), $model->getTable()->schema_name);
         });
         Morpher::setMaps();
     }

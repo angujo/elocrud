@@ -41,7 +41,7 @@ class Model
         $this->table        = $table;
         $this->content      = file_get_contents(Helper::BASE_DIR.'/stubs/model-template.tmpl');
         $this->className    = Helper::className($this->table->name);
-        $this->abstractName = Config::baseName($this->table->name,$this->table->schema_name);
+        $this->abstractName = Config::baseName($this->table->name, $this->table->schema_name);
         $this->basespace    = Config::baseSpace($table->schema_name);// Config::namespace().(Config::db_directories() ? '\\'.Helper::className($table->schema_name) : '').(Config::base_abstract() ? '\BaseTables' : '');
         $this->workspace    = Config::workSpace($table->schema_name);// Config::namespace().(Config::db_directories() ? '\\'.Helper::className($table->schema_name) : '');
         $this->fileName     = $this->className.'.php';
@@ -176,6 +176,9 @@ class Model
     {
         if ($column->type->isBool) {
             return filter_var($column->default, FILTER_VALIDATE_BOOLEAN);
+        }
+        if (0 === strcasecmp('null', $column->default)) {
+            return null;
         }
         return $column->default;
     }
