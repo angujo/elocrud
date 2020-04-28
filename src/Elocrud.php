@@ -55,7 +55,7 @@ class Elocrud
         $this->modelsOutput(function (Model $model) use ($closure) {
             Helper::makeDir(Config::dir_path(null, $model->getTable()->schema_name));
             if (Config::base_abstract() || (!Config::base_abstract() && Config::overwrite())) {
-                file_put_contents((Config::base_abstract() ? Config::base_dir() : Config::dir_path()).DIRECTORY_SEPARATOR.Config::baseName($model->getTable()->name, $model->getTable()->schema_name).'.php', (string)$model->toString());
+                file_put_contents($model->filePath(), (string)$model->toString());
             }
             if (Config::base_abstract() && (Config::overwrite() || !file_exists(Config::dir_path(null, $model->getTable()->schema_name).DIRECTORY_SEPARATOR.$model->getFileName()))) {
                 file_put_contents(Config::dir_path(null, $model->getTable()->schema_name).DIRECTORY_SEPARATOR.$model->getFileName(), (string)$model->workingClassText());

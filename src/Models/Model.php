@@ -296,7 +296,7 @@ class Model
             "\n * @access public".
             "\n * @author @angujomondi".
             "\n * @version ".PHP_VERSION.' of PhP'.
-            "\n * @date ".date('Y-m-d H:i').
+            (Config::date_base() ? "\n * @date ".date('Y-m-d H:i') : '').
             "\n *\n *\n";
     }
 
@@ -338,5 +338,10 @@ class Model
     public function getBasespace(): string
     {
         return $this->basespace;
+    }
+
+    public function filePath()
+    {
+        return (Config::base_abstract() ? Config::base_dir() : Config::dir_path()).DIRECTORY_SEPARATOR.Config::baseName($this->table->name, $this->table->schema_name).'.php';
     }
 }

@@ -17,6 +17,11 @@ use Illuminate\Database\Eloquent\Model;
 
 return [
     /*
+     * Enable to add @date on each Base Model every time it is run
+     * If set to False, @date will be set on first instance
+     */
+    'date_base' => false,
+    /*
      * Separate Models based on the database/schema
      * Recommended for cross database/schema system
      */

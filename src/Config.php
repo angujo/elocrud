@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static string eloquent_extension_name();
  * @method static string namespace();
  * @method static bool overwrite();
+ * @method static bool date_base();
  * @method static bool db_directories();
  * @method static bool base_abstract();
  * @method static bool composite_keys();
@@ -48,6 +49,7 @@ class Config
         'update_columns' => ['updated_at', 'updated'],
         'relation_remove_prx' => 'fk',
         'db_directories' => false,
+        'date_base' => false,
         'overwrite' => false,
         'relation_remove_sfx' => 'id',
         'eloquent_extension_name' => 'EloquentExtension',
