@@ -50,11 +50,17 @@ class ManyToMany
      */
     private $ref_schema_name;
 
-    protected function __construct($name, $table_name = null, $schema_name = null)
+    /**
+     * @var DBTable
+     */
+    private $table;
+
+    protected function __construct($name, DBTable $table, $table_name = null, $schema_name = null)
     {
+        $this->table       = $table;
         $this->name        = $name;
-        $this->table_name  = $table_name;
-        $this->schema_name = $schema_name;
+        $this->table_name  = $table->name;
+        $this->schema_name = $table->schema_name;
     }
 
     public static function checkLoadTable(DBTable $table)
@@ -62,12 +68,12 @@ class ManyToMany
         if (!self::isManyToMany($table)) {
             return;
         }
-        $keys=$table->foreign_keys_one_to_one;
+        $keys = $table->foreign_keys_one_to_one;
         foreach ($keys as $foreignKey) {
-            $me = new self($table->name);
+            $me = new self($table->name,$table);
             self::setColumnDetails($me, $foreignKey, true);
             $me->column_name    = $foreignKey->column_name;
-            $other_foreign_keys = array_filter($table->foreign_keys_one_to_one, function(ForeignKey $key) use ($foreignKey){
+            $other_foreign_keys = array_filter($table->foreign_keys_one_to_one, function (ForeignKey $key) use ($foreignKey) {
                 return 0 !== strcasecmp($foreignKey->column_reference, $key->column_reference);
             });
             foreach ($other_foreign_keys as $other_foreign_key) {
@@ -114,7 +120,7 @@ class ManyToMany
      */
     public static function getManyRelations(DBTable $table)
     {
-        return array_filter(self::$relations, function(self $self) use ($table){ return 0 === strcasecmp($table->reference, $self->getReference()); });
+        return array_filter(self::$relations, function (self $self) use ($table) { return 0 === strcasecmp($table->reference, $self->getReference()); });
     }
 
     public function getReference()
@@ -186,4 +192,11 @@ class ManyToMany
         return self::$relations;
     }
 
+    /**
+     * @return DBTable
+     */
+    public function getTable(): DBTable
+    {
+        return $this->table;
+    }
 }

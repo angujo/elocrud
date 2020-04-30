@@ -34,7 +34,7 @@ class BelongsToManyEntry extends Relation
         $method->setComment('Get '.Inflector::pluralize(Helper::className($toMany->getRefTableName())).' that belong to this '.Helper::className(Inflector::singularize($toMany->getTableName())));
         $method->setReturns(true);
         $method->setOutputType(Helper::baseName(BelongsToMany::class));
-        $method->setOutput('$this->belongsToMany('.Helper::className($toMany->getRefTableName()).'::class, \''.$toMany->getSchemaName().'.'.$toMany->getName().'\', \''.$toMany->getColumnName().'\', \''.$toMany->getRefColumnName().'\');');
+        $method->setOutput('$this->belongsToMany('.Helper::className($toMany->getRefTableName()).'::class, \''.($toMany->getTable()->has_schema?$toMany->getSchemaName().'.':'').$toMany->getName().'\', \''.$toMany->getColumnName().'\', \''.$toMany->getRefColumnName().'\');');
         $method->addImport(BelongsToMany::class);
         $method->addImport(Config::workSpace($toMany->getRefSchemaName()).'\\'.Helper::className($toMany->getRefTableName()));
         return $method;
