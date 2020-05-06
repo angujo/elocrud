@@ -36,7 +36,7 @@ return [
     /*
      * Tables to be excluded from model generation
      */
-    'excluded_tables' => ['migrations'],
+    'excluded_tables' => ['migrations','password_resets', 'oauth_access_tokens', 'oauth_auth_codes', 'oauth_clients', 'oauth_personal_access_clients', 'oauth_refresh_tokens',],
     /*
      *Tables to be run ONLY
      * The reset will be excluded
