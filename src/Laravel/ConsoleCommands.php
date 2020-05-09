@@ -19,6 +19,7 @@ use Throwable;
 class ConsoleCommands extends Command
 {
     protected $signature = 'elocrud:models 
+                            {--m|migrate : Perform migration first, i.e php artisan migrate}
                             {--c|connection= : The connection to use}
                             {--d|database= : The database and its schemas to run}
                             {--e|exclude=* : Excluded tables}
@@ -38,6 +39,9 @@ class ConsoleCommands extends Command
 
     public function handle()
     {
+        if ($this->option('migrate') && 0 !== ($exitCode = \Artisan::call('migrate'))) {
+            return $exitCode;
+        }
         try {
             /** @var $connection Connection */
             $this->elocrud->setConnection($connection = DB::connection($this->option('connection') ?: null), $connection->getDriverName());
