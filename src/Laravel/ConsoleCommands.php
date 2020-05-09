@@ -39,7 +39,7 @@ class ConsoleCommands extends Command
 
     public function handle()
     {
-        if ($this->option('migrate') && 0 !== ($exitCode = \Artisan::call('migrate'))) {
+        if ($this->option('migrate') && 0 !== ($exitCode = \Artisan::call('migrate --verbose'))) {
             return $exitCode;
         }
         try {
