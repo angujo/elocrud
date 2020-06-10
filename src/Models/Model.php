@@ -117,12 +117,17 @@ class Model
         );
 
         /** @var Method[] $mts */
-        $mts = array_merge(HasManyThroughEntry::methods($this->table, $this->workspace), BelongsToManyEntry::methods($this->table, $this->workspace));
-        foreach ($mts as $mt) {
-            if (false === current(array_filter($this->functions, function (Method $method) use ($mt) { return 0 === strcasecmp($method->getName(), $mt->getName()); }))) {
+        $mts = array_merge($this->functions, HasManyThroughEntry::methods($this->table, $this->workspace), BelongsToManyEntry::methods($this->table, $this->workspace));
+        /*
+         * Attempt to make functions unique
+         */
+        $this->functions = collect($mts)->unique(function (Method $method) { return $method->getName(); })->toArray();
+        /*foreach ($mts as $mt) {
+            if (false === current(
+                    array_filter($this->functions, function (Method $method) use ($mt) { return 0 === strcasecmp($method->getName(), $mt->getName()); }))) {
                 $this->functions[] = $mt;
             }
-        }
+        }*/
 
         foreach ($this->functions as $function) {
             $this->imports = array_merge($this->imports, $function->getImports());
