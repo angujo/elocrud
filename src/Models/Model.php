@@ -122,7 +122,8 @@ class Model
          * Attempt to make functions unique
          */
         $this->functions = collect($mts)->unique(function (Method $method) { return $method->getName(); })->toArray();
-        /*foreach ($mts as $mt) {
+        /*
+         foreach ($mts as $mt) {
             if (false === current(
                     array_filter($this->functions, function (Method $method) use ($mt) { return 0 === strcasecmp($method->getName(), $mt->getName()); }))) {
                 $this->functions[] = $mt;
