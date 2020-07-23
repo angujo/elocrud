@@ -9,7 +9,6 @@ use Angujo\DBReader\Models\DBTable;
 use Angujo\DBReader\Models\Schema;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\Helper;
-use Doctrine\Common\Inflector\Inflector;
 
 class Morpher
 {

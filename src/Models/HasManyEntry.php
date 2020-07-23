@@ -8,7 +8,6 @@ use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\DocInflector;
 use Angujo\Elocrud\Helper;
-use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -37,7 +36,7 @@ class HasManyEntry extends Relation
         $method = new Method(DocInflector::pluralize(lcfirst(Helper::className($name))));
         $method->setReturns(true);
         $method->setNamespace($this->namespace);
-        $method->setComment('Get all '.DocInflector::pluralize(Helper::className($foreignKey->foreign_table_name)).' that are assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
+        $method->setComment('Get all '.DocInflector::pluralize(Helper::className($foreignKey->foreign_table_name)).' that are assigned to this '.Helper::className(DocInflector::singularize($foreignKey->table_name)));
         $method->setOutput('$this->hasMany('.Helper::className($foreignKey->foreign_table_name).'::class'.$this->conformValues($foreignKey->foreign_table, $foreignKey->foreign_column_name, $foreignKey->column_name).');');
         $method->setOutputType(Helper::baseName(HasMany::class));
         $method->addImport(Collection::class)->addImport(HasMany::class);

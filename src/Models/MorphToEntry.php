@@ -4,11 +4,9 @@
 namespace Angujo\Elocrud\Models;
 
 
-use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\DocInflector;
 use Angujo\Elocrud\Helper;
-use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**

@@ -5,7 +5,6 @@ namespace Angujo\Elocrud;
 
 
 //use Doctrine\Common\Inflector\Inflector;
-//use Doctrine\Inflector\Inflector;
 
 class Helper
 {

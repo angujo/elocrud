@@ -8,7 +8,6 @@ use Angujo\DBReader\Models\DBColumn;
 use Angujo\DBReader\Models\DBTable;
 use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\DocInflector;
-use Doctrine\Common\Inflector\Inflector;
 
 /**
  * Class Relation

@@ -8,7 +8,6 @@ use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\Config;
 use Angujo\Elocrud\DocInflector;
 use Angujo\Elocrud\Helper;
-use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -31,7 +30,7 @@ class BelongsToEntry extends Relation
         $method = new Method(Config::relationFunctionName($foreignKey, Config::COLUMN_NAME));
         $method->setReturns(true);
         $method->setNamespace($this->namespace);
-        $method->setComment('Get '.DocInflector::singularize(Helper::className($foreignKey->foreign_table_name)).' that is assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
+        $method->setComment('Get '.DocInflector::singularize(Helper::className($foreignKey->foreign_table_name)).' that is assigned to this '.Helper::className(DocInflector::singularize($foreignKey->table_name)));
         $method->setOutput('$this->belongsTo('.Helper::className($foreignKey->foreign_table_name).'::class'.$this->conformValues($foreignKey->foreign_table, $foreignKey->column_name, $foreignKey->foreign_column_name).');');
         $method->setOutputType(Helper::baseName(BelongsTo::class));
         $method->addImport(BelongsTo::class);
