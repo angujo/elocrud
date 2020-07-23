@@ -70,10 +70,11 @@ class Property
         self::$instances = [];
     }
 
-    public static function fromColumn(DBColumn $column, $cast_type = null)
+    public static function fromColumn(DBColumn $column, $cast_type = null, $const = true)
     {
-        self::constant(strtoupper($column->name), $column->name)->setComment('Column name: '.$column->name);
-        //echo '<pre>';var_dump($column->type->isPhpinteger,$column->type->isInt,$column->data_type);
+        if ($const) {
+            self::constant(strtoupper($column->name), $column->name)->setComment('Column name: '.$column->name);
+        }
         $prop = self::phpdocProperty($column->name, self::getColumnType($column, $cast_type), is_array($column->data_type) ? implode(',', $column->data_type) : $column->data_type);
         if ($column->is_nullable && !$column->is_primary && !$column->is_auto_increment) {
             $prop->addType('NULL');
