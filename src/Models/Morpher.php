@@ -128,7 +128,7 @@ class Morpher
                 return $r;
             };
             foreach ($table_map as $table => $class) {
-                //  $table = Inflector::singularize(strtolower($table));
+                //  $table = DocInflector::singularize(strtolower($table));
                 $maps .= ($maps ? '                ' : '')."'{$table}' ".$spaces($max - (strlen($table) + 2))."=> '{$class}',\n";
             }
             $className=(Config::db_directories() && $schema_name ? Helper::className($schema_name) : 'Relation').'MorphMap';

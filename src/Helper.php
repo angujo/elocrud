@@ -4,7 +4,8 @@
 namespace Angujo\Elocrud;
 
 
-use Doctrine\Common\Inflector\Inflector;
+//use Doctrine\Common\Inflector\Inflector;
+//use Doctrine\Inflector\Inflector;
 
 class Helper
 {
@@ -76,7 +77,7 @@ class Helper
      */
     public static function className($name)
     {
-        return Inflector::classify(Inflector::singularize($name));// Inflector::classify($name);// Lang::toSingle(ucwords(self::carmelCase($name)));
+        return DocInflector::classify(DocInflector::singularize($name));// Inflector::classify($name);// Lang::toSingle(ucwords(self::carmelCase($name)));
     }
 
     /**

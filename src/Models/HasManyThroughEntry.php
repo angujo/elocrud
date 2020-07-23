@@ -6,6 +6,7 @@ namespace Angujo\Elocrud\Models;
 
 use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\Config;
+use Angujo\Elocrud\DocInflector;
 use Angujo\Elocrud\Helper;
 use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -40,11 +41,11 @@ class HasManyThroughEntry extends Relation
      */
     protected function get_Method(ForeignKey $foreignKey, ForeignKey $foreignKey_int)
     {
-        $name=Inflector::singularize(lcfirst(Helper::cleanClassName($foreignKey->foreign_table_name))).Inflector::pluralize(ucfirst(Helper::className($foreignKey_int->foreign_table_name)));
+        $name=DocInflector::singularize(lcfirst(Helper::cleanClassName($foreignKey->foreign_table_name))).DocInflector::pluralize(ucfirst(Helper::className($foreignKey_int->foreign_table_name)));
         $method = new Method($name);
         $method->setReturns(true);
         $method->setNamespace($this->namespace);
-        $method->setComment('Get all ['.Inflector::pluralize(Helper::className($foreignKey_int->foreign_table_name)).'] accessible via ['.Inflector::pluralize(Helper::className($foreignKey->foreign_table_name)).'] that are assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
+        $method->setComment('Get all ['.DocInflector::pluralize(Helper::className($foreignKey_int->foreign_table_name)).'] accessible via ['.Inflector::pluralize(Helper::className($foreignKey->foreign_table_name)).'] that are assigned to this '.Helper::className(Inflector::singularize($foreignKey->table_name)));
         $method->setOutput('$this->hasManyThrough('.Helper::className($foreignKey_int->foreign_table_name).'::class, '.Helper::className($foreignKey->foreign_table_name).'::class, \''.$foreignKey->foreign_column_name.'\', \''.$foreignKey_int->foreign_column_name.'\', \''.$foreignKey->column_name.'\', \''.$foreignKey_int->column_name.'\');');
         $method->setOutputType(Helper::baseName(HasManyThrough::class));
         $method->addImport(HasManyThrough::class);

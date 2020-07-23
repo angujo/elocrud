@@ -7,6 +7,7 @@ namespace Angujo\Elocrud\Models;
 use Angujo\DBReader\Models\DBColumn;
 use Angujo\DBReader\Models\DBTable;
 use Angujo\DBReader\Models\ForeignKey;
+use Angujo\Elocrud\DocInflector;
 use Doctrine\Common\Inflector\Inflector;
 
 /**
@@ -158,6 +159,6 @@ abstract class Relation
         }
         /** @var DBColumn $p */
         $p = array_pop($cols);
-        return 0 === strcasecmp($column_name, Inflector::singularize($fTable->name).'_'.$p->name);
+        return 0 === strcasecmp($column_name, DocInflector::singularize($fTable->name).'_'.$p->name);
     }
 }

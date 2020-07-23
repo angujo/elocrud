@@ -6,6 +6,7 @@ namespace Angujo\Elocrud\Models;
 
 use Angujo\DBReader\Models\ForeignKey;
 use Angujo\Elocrud\Config;
+use Angujo\Elocrud\DocInflector;
 use Angujo\Elocrud\Helper;
 use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -48,9 +49,9 @@ class MorphToEntry extends Relation
             }
             $method->addImport(Config::workSpace($item->getSchemaName()).'\\'.Helper::className($item->getTableName()));
             $prop->addType(Helper::className($item->getTableName()));
-            $cmt[] = Inflector::singularize(Helper::className($item->getTableName()));
+            $cmt[] = DocInflector::singularize(Helper::className($item->getTableName()));
         }
-        $method->setComment('Get  '.implode('/', $cmt).' that is morphed to this '.Helper::className(Inflector::singularize($morph->getTableName())));
+        $method->setComment('Get  '.implode('/', $cmt).' that is morphed to this '.Helper::className(DocInflector::singularize($morph->getTableName())));
         return $method;
     }
 }

@@ -7,4 +7,4 @@
  */
 
 //\Angujo\DBReader\Drivers\Config::set('pgsql', 'localhost', 5434, 'indicator', 'postgres', 'postgres');
-\Angujo\DBReader\Drivers\Config::set('mysql', 'localhost', 3306, 'digger_admin', 'root', 'root');
+\Angujo\DBReader\Drivers\Config::set('mysql', 'localhost', 3306, 'digger', 'root', 'root');

@@ -5,6 +5,7 @@ namespace Angujo\Elocrud\Models;
 
 
 use Angujo\Elocrud\Config;
+use Angujo\Elocrud\DocInflector;
 use Angujo\Elocrud\Helper;
 use Doctrine\Common\Inflector\Inflector;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,11 +35,11 @@ class MorphedEntry extends Relation
 
     protected function getMethod(MorphItem $morphItem)
     {
-        $method = new Method($prop_name = lcfirst(Inflector::classify($morphItem->isOneToOneRelation() ? Inflector::singularize($morphItem->getReturnTableName()) : Inflector::pluralize($morphItem->getReturnTableName()))));
+        $method = new Method($prop_name = lcfirst(DocInflector::classify($morphItem->isOneToOneRelation() ? DocInflector::singularize($morphItem->getReturnTableName()) : Inflector::pluralize($morphItem->getReturnTableName()))));
         $method->addImport(Config::workSpace($morphItem->getReturnSchemaName()).'\\'.Helper::className($morphItem->getReturnTableName()));
-        $method->setComment('Get all of '.Inflector::pluralize(Helper::className($morphItem->getReturnTableName())).' that are assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
+        $method->setComment('Get all of '.DocInflector::pluralize(Helper::className($morphItem->getReturnTableName())).' that are assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
         if ($morphItem->isOneToOneRelation()) {
-            $method->setComment('Get  '.Inflector::singularize(Helper::className($morphItem->getReturnTableName())).' that is assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
+            $method->setComment('Get  '.DocInflector::singularize(Helper::className($morphItem->getReturnTableName())).' that is assigned to this '.Helper::className(Inflector::singularize($morphItem->getTableName())));
             Property::phpdocProperty($prop_name, Helper::className($morphItem->getReturnTableName()))->addType('NULL');
             $method->addImport(MorphOne::class);
             $method->setOutputType(Helper::baseName(MorphOne::class));
