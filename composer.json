@@ -20,12 +20,7 @@
       "Angujo\\Elocrud\\": "src/"
     }
   },
-  "repositories": [
-    {
-      "type": "path",
-      "url": "H:\\www\\dbreader"
-    }
-  ],
+  "repositories": [],
   "extra": {
     "laravel": {
       "providers": [
