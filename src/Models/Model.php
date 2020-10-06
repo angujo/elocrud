@@ -170,9 +170,9 @@ class Model
 
     protected function defaultColumn(DBColumn $column)
     {
-        if (!strlen($column->default)) {
+        /*if (!strlen($column->default)) {
             return;
-        }
+        }*/
         if (!$this->attribs) {
             $this->attribs = Property::attribute('protected', 'attributes', [], 'Default attribute values')->setType('array');
         }
