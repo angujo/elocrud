@@ -77,7 +77,10 @@ class Model
         }
         $timeStamp = 0;
         $types     = array_merge(Config::create_columns(), Config::update_columns());
-        foreach ($this->table->columns as $column) {
+
+        $columns=$this->table->columns;
+        usort($columns, function(DBColumn $colA,DBColumn $colB){return strcasecmp($colA->name,$colB->name);});
+        foreach ($columns as $column) {
             $ctype = $this->setCast($column);
             $set   = true;
             if (in_array($column->name, $types) &&
@@ -123,6 +126,7 @@ class Model
          * Attempt to make functions unique
          */
         $this->functions = collect($mts)->unique(function(Method $method){ return $method->getName(); })->toArray();
+        usort($this->functions, function(Method $methodA, Method $methodB){return strcasecmp($methodA->getName(), $methodB->getName());});
         /*
          foreach ($mts as $mt) {
             if (false === current(
